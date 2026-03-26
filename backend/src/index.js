@@ -6,7 +6,7 @@ let locations = [];
 
 async function getApi (lat, lon) {
     try {
-        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=YOUR_API_KEY`);
+        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=5f73bc1d60bcb647d5084a007f61a151`);
         const data = await response.json();
         return data;
     } catch ( error ) {
