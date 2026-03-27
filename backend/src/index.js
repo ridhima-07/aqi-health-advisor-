@@ -1,4 +1,7 @@
-const express = require('express');
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from "express";
 const app = express();
 
 let healthProfile = null;
@@ -6,12 +9,45 @@ let locations = [];
 
 async function getApi (lat, lon) {
     try {
-        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=5f73bc1d60bcb647d5084a007f61a151`);
+        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.API_KEY}`);
         const data = await response.json();
         return data;
     } catch ( error ) {
-        console.log("error");
+        console.log(error);
     }
+}
+
+function getAqiLabel ( aqiLevel )
+{
+        switch ( aqiLevel )
+        {
+            case 1: return "Good";
+            case 2: return "Fair";
+            case 3: return "Moderate";
+            case 4: return "Poor";
+            case 5: return "Very Poor";
+            default: return "Unknown";
+        }
+}
+
+function calculateRiskLevel ( aqiLevel, healthProfile )
+{
+    let score = aqiLevel - 1;
+    if ( healthProfile.isSmoker ) score += 1;
+    if ( healthProfile.hasAllergy ) score += 1;
+    if ( healthProfile.hasHeartCondition ) score += 2;
+    if ( healthProfile.hasAsthma ) score += 2;
+    if ( healthProfile.hasCOPD ) score += 3;
+    
+    if ( score>=0 && score<=2 )
+        return "LOW";
+    else if ( score>=3 && score<=5 )
+        return "MODERATE";
+    else if ( score>=6 && score<=8 )
+        return "HIGH";
+    else if ( score>=9 )
+        return "SEVERE";
+    return "UNKNOWN";
 }
 
 app.use(express.json());
@@ -21,6 +57,8 @@ app.get('/', (req,res)=>{
 });
 
 app.post('/health-profile', (req,res)=>{
+    if ( !req.body )
+        return res.status(404).json({message: "Health Profile not set up."});
     healthProfile = req.body;
     res.send();
 });
@@ -30,22 +68,45 @@ app.get('/health-profile', (req,res) => {
 });
 
 app.post('/location', (req,res)=>{
+    console.log("Incoming body: ", req.body);
     locations.push(req.body);
     res.send();
 });
 
 app.get('/locations', (req,res)=>{
+    console.log(locations);
     res.send(locations);
 });
 
 app.get('/aqi', async (req,res)=>{
+    console.log("AQI route hit ✅");
     const city = req.query.city;
     const location = locations.find(loc => loc.city === city);
     if ( !location ) {
-        return res.send("City not found.")
+        return res.status(404).json({message: "City not found."});
     }
     const aqi = await getApi(location.lat, location.lon);
-    res.send(aqi); 
+    const aqiLevel = aqi.list[0].main.aqi;
+    const pollutants = aqi.list[0].components;
+
+    const pm25 = pollutants.pm2_5;
+    const pm10 = pollutants.pm10;
+    const co = pollutants.co;
+    const no2 = pollutants.no2;
+    const o3 = pollutants.o3;
+    const so2 = pollutants.so2;
+    const nh3 = pollutants.nh3;
+
+    if ( !healthProfile )
+        return res.status(400).json({message: "Health Profile not set up!"});
+
+    const aqiLabel = getAqiLabel ( aqiLevel );
+    const riskLevel = calculateRiskLevel ( aqiLevel, healthProfile );
+    res.send({aqiLabel, aqiLevel, pollutants, riskLevel }); 
+});
+
+app.get('/test-db', (req,res)=>{
+    
 });
 
 app.listen(8000, ()=>{
