@@ -4,6 +4,9 @@ dotenv.config();
 import express from "express";
 const app = express();
 
+import pool from "./db.js";
+import {addLocation, getLocation, getLocationByCity} from "./queries/locations.js";
+
 let healthProfile = null;
 let locations = [];
 
@@ -67,21 +70,26 @@ app.get('/health-profile', (req,res) => {
     res.send(healthProfile);
 });
 
-app.post('/location', (req,res)=>{
-    console.log("Incoming body: ", req.body);
-    locations.push(req.body);
-    res.send();
+app.post('/location', async (req,res)=>{
+    try {
+        const { user_id, city, state, lat, lon } = req.body;
+        const newLocation = await addLocation( user_id, city, state, lat, lon );
+        res.status(201).json({message: "Location Added!"})
+    } catch ( error ) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to add location" });
+    }
 });
 
-app.get('/locations', (req,res)=>{
-    console.log(locations);
+app.get('/locations', async (req,res)=>{
+    const locations = await getLocation();
     res.send(locations);
 });
 
 app.get('/aqi', async (req,res)=>{
     console.log("AQI route hit ✅");
     const city = req.query.city;
-    const location = locations.find(loc => loc.city === city);
+    const location = await getLocationByCity(city);
     if ( !location ) {
         return res.status(404).json({message: "City not found."});
     }
@@ -105,8 +113,14 @@ app.get('/aqi', async (req,res)=>{
     res.send({aqiLabel, aqiLevel, pollutants, riskLevel }); 
 });
 
-app.get('/test-db', (req,res)=>{
-    
+app.get("/test-db", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT NOW() AS time");
+    res.json({ success: true, time: rows[0].time });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, error: "DB connection failed" });
+  }
 });
 
 app.listen(8000, ()=>{
