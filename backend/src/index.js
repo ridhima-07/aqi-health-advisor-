@@ -5,7 +5,7 @@ import express from "express";
 const app = express();
 
 import pool from "./db.js";
-import {addLocation, getLocation, getLocationByCity} from "./queries/locations.js";
+import {addLocation, getLocations, getLocationByCity, getLocationByUserID, getLocationByID, updateLocationByID, deleteLocationByID} from "./queries/locations.js";
 import {addHealthProfile, getHealthProfile, getHealthProfileByUserID, updateHealthProfileByUserID, deleteHealthProfileByUserID} from './queries/health.js';
 
 async function getApi (lat, lon) {
@@ -117,8 +117,40 @@ app.post('/location', async (req,res)=>{
     }
 });
 
+app.put('/location/:id', async (req,res)=>{
+    try {
+        const id = req.params.id;
+        const {city, state, lat, lon} = req.body;
+        const updatedLocation = await updateLocationByID(id, city, state, lat, lon);
+        if (updatedLocation.affectedRows === 0)
+            return res.status(404).json({message: "Location not found."});
+        return res.status(201).json({message: "Location updated succesfully!"});
+    } catch (error){
+        console.log(error);
+        res.status(500).json({message: "Failed to update location."});
+    }
+});
+
+app.get("/location/:id", async(req,res)=>{
+    const id = req.params.id;
+    const locationByID = await getLocationByID(id);
+    res.send(locationByID);
+})
+
+app.delete("/location/:id", async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const result = await deleteLocationByID(id);
+        if ( result.affectedRows===0 )
+            return res.status(400).json({message: "Location not found."});
+        return res.status(200).json({message: "Location deleted successfully!"});
+    } catch(error) {
+        res.status(500).json({message: "Failed to delete location." })
+    }
+});
+
 app.get('/locations', async (req,res)=>{
-    const locations = await getLocation();
+    const locations = await getLocations();
     res.send(locations);
 });
 
@@ -127,7 +159,7 @@ app.get('/aqi/:id', async (req,res)=>{
     const city = req.query.city;
     if (!city) 
         return res.status(400).json({message: "City query parameter is required"});
-    const location = await getLocationByCity(city);
+    const location = await getLocationByCity(req.params.id, city);
     if ( !location ) {
         return res.status(404).json({message: "City not found."});
     }
