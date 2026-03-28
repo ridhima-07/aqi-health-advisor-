@@ -6,7 +6,7 @@ const app = express();
 
 import pool from "./db.js";
 import {addLocation, getLocation, getLocationByCity} from "./queries/locations.js";
-import {addHealthProfile, getHealthProfile} from './queries/health.js';
+import {addHealthProfile, getHealthProfile, getHealthProfileByUserID, updateHealthProfileByUserID, deleteHealthProfileByUserID} from './queries/health.js';
 
 async function getApi (lat, lon) {
     try {
@@ -66,14 +66,45 @@ app.post('/health-profile', async (req,res)=>{
         res.status(201).json({message: "Health Profile Added!"}); 
     } catch(error) {
         console.log(error);
-        res.status(500).json({ message: "Failed to add health profile" });
+        res.status(500).json({ message: "Failed to add health profile :(" });
     }
 });
 
-app.get('/health-profile', async (req,res) => {
-    const healthProfile = await getHealthProfile();
-    res.send(healthProfile[0]);
+app.put('/health-profile', async(req,res)=>{
+    try {
+        if (!req.body)
+            return res.status(404).json({message: "Health Profile not added."});
+        const {user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score} = req.body; 
+        const updatedHealthProfile = await updateHealthProfileByUserID(user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score);
+        res.status(201).json({message: "Health Profile updated successfully!"});
+    } catch ( error ){
+        console.log(error);
+        res.status(500).json({message: "Failed to update health profile :("});
+    }
 });
+
+app.get('/health-profile/:id', async (req,res)=>{
+    const user_id = req.params.id;
+    const healthProfileByUserID = await getHealthProfileByUserID ( user_id );
+    res.send(healthProfileByUserID);
+})
+
+app.get('/health-profiles', async (req,res) => {
+    const healthProfile = await getHealthProfile();
+    res.send(healthProfile);
+});
+
+app.delete('/health-profile/:id', async (req, res)=>{
+    try {
+        const user_id = req.params.id;
+        const result = await deleteHealthProfileByUserID(user_id);
+        if ( result.affectedRows === 0 )
+            return res.status(404).json({message: "Health Profile not found"});
+        return res.status(200).json({message: "Health profile deleted successfully!"});
+    } catch ( error ) {
+        res.status(500).json({message: "Failed to delete health profile."});
+    }
+})
 
 app.post('/location', async (req,res)=>{
     try {
@@ -91,9 +122,11 @@ app.get('/locations', async (req,res)=>{
     res.send(locations);
 });
 
-app.get('/aqi', async (req,res)=>{
+app.get('/aqi/:id', async (req,res)=>{
     console.log("AQI route hit ✅");
     const city = req.query.city;
+    if (!city) 
+        return res.status(400).json({message: "City query parameter is required"});
     const location = await getLocationByCity(city);
     if ( !location ) {
         return res.status(404).json({message: "City not found."});
@@ -110,13 +143,12 @@ app.get('/aqi', async (req,res)=>{
     const so2 = pollutants.so2;
     const nh3 = pollutants.nh3;
 
-    const healthProfiles = await getHealthProfile();
-    const healthProfile = healthProfiles[0];
-    if ( !healthProfile )
+    const healthProfileByUserID = await getHealthProfileByUserID(req.params.id);
+    if ( !healthProfileByUserID )
         return res.status(400).json({message: "Health Profile not set up!"});
 
     const aqiLabel = getAqiLabel ( aqiLevel );
-    const riskLevel = calculateRiskLevel ( aqiLevel, healthProfile );
+    const riskLevel = calculateRiskLevel ( aqiLevel, healthProfileByUserID );
     res.send({aqiLabel, aqiLevel, pollutants, riskLevel }); 
 });
 
