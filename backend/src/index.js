@@ -17,7 +17,19 @@ async function getApi (lat, lon) {
     } catch ( error ) {
         console.log(error);
     }
-}
+};
+
+function calculateHealthScore (isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy)
+{
+    let score = 0;
+    if ( isSmoker ) score += 2;
+    if ( hasHeartCondition ) score += 3;
+    if ( hasAsthma ) score += 3;
+    if ( hasCOPD ) score += 4;
+    if ( hasAllergy ) score += 1;
+
+    return score;
+};
 
 function getAqiLabel ( aqiLevel )
 {
@@ -30,7 +42,7 @@ function getAqiLabel ( aqiLevel )
             case 5: return "Very Poor";
             default: return "Unknown";
         }
-}
+};
 
 function calculateRiskLevel ( aqiLevel, healthProfile )
 {
@@ -50,7 +62,7 @@ function calculateRiskLevel ( aqiLevel, healthProfile )
     else if ( score>=9 )
         return "SEVERE";
     return "UNKNOWN";
-}
+};
 
 app.use(express.json());
 
@@ -62,7 +74,8 @@ app.post('/health-profile', async (req,res)=>{
     try {
         if (!req.body)
             return res.status(404).json({message: "Health Profile not set up."});
-        const {user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score} = req.body;
+        const {user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy} = req.body;
+        const health_score = calculateHealthScore ( isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy );
         const newHealthProfile = await addHealthProfile(user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score);
         res.status(201).json({message: "Health Profile Added!"}); 
     } catch(error) {
@@ -75,7 +88,8 @@ app.put('/health-profile', async(req,res)=>{
     try {
         if (!req.body)
             return res.status(404).json({message: "Health Profile not added."});
-        const {user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score} = req.body; 
+        const {user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy} = req.body; 
+        const health_score = calculateHealthScore ( isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy );
         const updatedHealthProfile = await updateHealthProfileByUserID(user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score);
         res.status(201).json({message: "Health Profile updated successfully!"});
     } catch ( error ){
@@ -88,7 +102,7 @@ app.get('/health-profile/:id', async (req,res)=>{
     const user_id = req.params.id;
     const healthProfileByUserID = await getHealthProfileByUserID ( user_id );
     res.send(healthProfileByUserID);
-})
+});
 
 app.get('/health-profiles', async (req,res) => {
     const healthProfile = await getHealthProfile();
@@ -100,18 +114,18 @@ app.delete('/health-profile/:id', async (req, res)=>{
         const user_id = req.params.id;
         const result = await deleteHealthProfileByUserID(user_id);
         if ( result.affectedRows === 0 )
-            return res.status(404).json({message: "Health Profile not found"});
+            return res.status(400).json({message: "Health Profile not found"});
         return res.status(200).json({message: "Health profile deleted successfully!"});
     } catch ( error ) {
         res.status(500).json({message: "Failed to delete health profile."});
     }
-})
+});
 
 app.post('/location', async (req,res)=>{
     try {
         const { user_id, city, state, lat, lon } = req.body;
         const newLocation = await addLocation( user_id, city, state, lat, lon );
-        res.status(201).json({message: "Location Added!"})
+        res.status(200).json({message: "Location Added!"})
     } catch ( error ) {
         console.log(error);
         res.status(500).json({ message: "Failed to add location" });
@@ -125,7 +139,7 @@ app.put('/location/:id', async (req,res)=>{
         const updatedLocation = await updateLocationByID(id, city, state, lat, lon);
         if (updatedLocation.affectedRows === 0)
             return res.status(404).json({message: "Location not found."});
-        return res.status(201).json({message: "Location updated succesfully!"});
+        return res.status(200).json({message: "Location updated succesfully!"});
     } catch (error){
         console.log(error);
         res.status(500).json({message: "Failed to update location."});
@@ -136,7 +150,7 @@ app.get("/location/:id", async(req,res)=>{
     const id = req.params.id;
     const locationByID = await getLocationByID(id);
     res.send(locationByID);
-})
+});
 
 app.delete("/location/:id", async(req,res)=>{
     try {
@@ -163,7 +177,7 @@ app.get('/aqi/fetch/:location_id', async (req,res)=>{
     const location_id = req.params.location_id;
     const location = await getLocationByID(location_id);
     if ( !location ) {
-        return res.status(404).json({message: "Location not found."});
+        return res.status(400).json({message: "Location not found."});
     }
     const aqi = await getApi(location.lat, location.lon);
     const aqiLevel = aqi.list[0].main.aqi;
