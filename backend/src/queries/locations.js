@@ -4,7 +4,7 @@ export async function addLocation (user_id, city, state, lat, lon )
 {
     const [newLocation] = await pool.query(`INSERT into locations (user_id, city, state, lat, lon)
        VALUES  ( ? , ? , ? , ? , ? )`,[user_id, city, state, lat,lon]);
-    return newLocation
+    return newLocation;
 };
 
 export async function getLocation () 
@@ -19,4 +19,3 @@ export async function getLocationByCity (city)
     return location[0];
 }
 
-export default {addLocation, getLocation, getLocationByCity};

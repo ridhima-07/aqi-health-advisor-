@@ -6,9 +6,7 @@ const app = express();
 
 import pool from "./db.js";
 import {addLocation, getLocation, getLocationByCity} from "./queries/locations.js";
-
-let healthProfile = null;
-let locations = [];
+import {addHealthProfile, getHealthProfile} from './queries/health.js';
 
 async function getApi (lat, lon) {
     try {
@@ -59,15 +57,22 @@ app.get('/', (req,res)=>{
     res.send("<h1>Hello World!<h1>");
 });
 
-app.post('/health-profile', (req,res)=>{
-    if ( !req.body )
-        return res.status(404).json({message: "Health Profile not set up."});
-    healthProfile = req.body;
-    res.send();
+app.post('/health-profile', async (req,res)=>{
+    try {
+        if (!req.body)
+            return res.status(404).json({message: "Health Profile not set up."});
+        const {user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score} = req.body;
+        const newHealthProfile = await addHealthProfile(user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score);
+        res.status(201).json({message: "Health Profile Added!"}); 
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to add health profile" });
+    }
 });
 
-app.get('/health-profile', (req,res) => {
-    res.send(healthProfile);
+app.get('/health-profile', async (req,res) => {
+    const healthProfile = await getHealthProfile();
+    res.send(healthProfile[0]);
 });
 
 app.post('/location', async (req,res)=>{
@@ -105,6 +110,8 @@ app.get('/aqi', async (req,res)=>{
     const so2 = pollutants.so2;
     const nh3 = pollutants.nh3;
 
+    const healthProfiles = await getHealthProfile();
+    const healthProfile = healthProfiles[0];
     if ( !healthProfile )
         return res.status(400).json({message: "Health Profile not set up!"});
 
