@@ -7,6 +7,7 @@ const app = express();
 import pool from "./db.js";
 import {addLocation, getLocations, getLocationByCity, getLocationByUserID, getLocationByID, updateLocationByID, deleteLocationByID} from "./queries/locations.js";
 import {addHealthProfile, getHealthProfile, getHealthProfileByUserID, updateHealthProfileByUserID, deleteHealthProfileByUserID} from './queries/health.js';
+import {addAqiReading, getAqiReadingsByLocationID, getLatestAqiReadingByLocationID} from "./queries/aqi.js";
 
 async function getApi (lat, lon) {
     try {
@@ -154,14 +155,15 @@ app.get('/locations', async (req,res)=>{
     res.send(locations);
 });
 
-app.get('/aqi/:id', async (req,res)=>{
-    console.log("AQI route hit ✅");
-    const city = req.query.city;
-    if (!city) 
-        return res.status(400).json({message: "City query parameter is required"});
-    const location = await getLocationByCity(req.params.id, city);
+
+
+app.get('/aqi/fetch/:location_id', async (req,res)=>{
+    console.log("AQI route hit ");
+    
+    const location_id = req.params.location_id;
+    const location = await getLocationByID(location_id);
     if ( !location ) {
-        return res.status(404).json({message: "City not found."});
+        return res.status(404).json({message: "Location not found."});
     }
     const aqi = await getApi(location.lat, location.lon);
     const aqiLevel = aqi.list[0].main.aqi;
@@ -175,13 +177,27 @@ app.get('/aqi/:id', async (req,res)=>{
     const so2 = pollutants.so2;
     const nh3 = pollutants.nh3;
 
-    const healthProfileByUserID = await getHealthProfileByUserID(req.params.id);
+    await addAqiReading(location_id, aqiLevel, co, no2, o3, so2, pm25, pm10, nh3);
+
+    const healthProfileByUserID = await getHealthProfileByUserID(location.user_id);
     if ( !healthProfileByUserID )
         return res.status(400).json({message: "Health Profile not set up!"});
 
     const aqiLabel = getAqiLabel ( aqiLevel );
     const riskLevel = calculateRiskLevel ( aqiLevel, healthProfileByUserID );
     res.send({aqiLabel, aqiLevel, pollutants, riskLevel }); 
+});
+
+app.get('/aqi-history/:location_id', async (req,res)=>{
+    const location_id = req.params.location_id;
+    const aqiHistory = await getAqiReadingsByLocationID(location_id);
+    res.send(aqiHistory);
+});
+
+app.get('/aqi-latest/:location_id', async(req,res)=>{
+    const location_id = req.params.location_id;
+    const aqiLatest = await getLatestAqiReadingByLocationID(location_id);
+    res.send(aqiLatest);
 });
 
 app.get("/test-db", async (req, res) => {
