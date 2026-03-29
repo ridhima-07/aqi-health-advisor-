@@ -10,49 +10,6 @@ import {
     getLatestAqiReadingByLocationID
 } from "../queries/aqi.js";
 
-function getAqiLabel ( aqiLevel )
-{
-        switch ( aqiLevel )
-        {
-            case 1: return "Good";
-            case 2: return "Fair";
-            case 3: return "Moderate";
-            case 4: return "Poor";
-            case 5: return "Very Poor";
-            default: return "Unknown";
-        }
-};
-
-function calculateRiskLevel ( aqiLevel, healthProfile )
-{
-    let score = aqiLevel - 1;
-    if ( healthProfile.isSmoker ) score += 1;
-    if ( healthProfile.hasAllergy ) score += 1;
-    if ( healthProfile.hasHeartCondition ) score += 2;
-    if ( healthProfile.hasAsthma ) score += 2;
-    if ( healthProfile.hasCOPD ) score += 3;
-    
-    if ( score>=0 && score<=2 )
-        return "LOW";
-    else if ( score>=3 && score<=5 )
-        return "MODERATE";
-    else if ( score>=6 && score<=8 )
-        return "HIGH";
-    else if ( score>=9 )
-        return "SEVERE";
-    return "UNKNOWN";
-};
-
-async function getApi (lat, lon) {
-    try {
-        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.API_KEY}`);
-        const data = await response.json();
-        return data;
-    } catch ( error ) {
-        console.log(error);
-    }
-};
-
 export async function fetchAQI (req, res) {
     console.log("AQI route hit ");
     
