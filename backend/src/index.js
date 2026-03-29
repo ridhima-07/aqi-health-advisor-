@@ -7,12 +7,14 @@ const app = express();
 import locationRoutes from "./routes/locationRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
 import aqiRoutes from "./routes/aqiRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 app.use(express.json());
 
 app.use("/health-profile", healthRoutes);
 app.use("/location", locationRoutes);
 app.use("/aqi", aqiRoutes);
+app.use("/users", userRoutes);
 
 app.listen(8000, ()=>{
     console.log("Server is running.")
