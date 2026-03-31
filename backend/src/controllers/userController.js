@@ -37,7 +37,7 @@ export async function getAllUsers(req,res)
 {
     try {
         const users = await getUsers();
-        res.send(users);
+        res.status(200).json({users});
     } catch (error) {
         res.status(500).json({message: "Failed to fetch users."});
     }
@@ -50,7 +50,7 @@ export async function getUserByIdController (req, res)
         const user = await getUserByID (id);
         if (!user) 
             return res.status(404).json({message: "User not found."});
-        return res.send(user);
+        return res.status(200).json({user});
     } catch (error) {
         res.status(500).json({message: "Failed to fetch user"});
     }
@@ -63,7 +63,7 @@ export async function getUserByEmailController (req, res)
         const user = await getUserByEmail (email);
         if (!user) 
             return res.status(404).json({message: "User not found."});
-        return res.send(user);
+        return res.status(200).json({user});
     } catch (error) {
         res.status(500).json({message: "Failed to fetch user"});
     }
@@ -78,6 +78,6 @@ export async function deleteUser(req, res)
             return res.status(404).json({message: "User not found"});
         return res.status(200).json({message: "User deleted successfully!"});
     } catch (error) {
-        res.send(500).json({message: "Failed to delete user."});
+        res.status(500).json({message: "Failed to delete user."});
     }
 }

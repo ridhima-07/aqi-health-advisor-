@@ -14,10 +14,9 @@ export async function getData (user_id)
     const health_profile = await getHealthProfileByUserID(user_id);
     if (!health_profile) return null;
 
-    const locations = await getLocationByUserID(user_id);
-    if (!locations || locations.length === 0) return null;
+    const location = await getLatestLocationByUserID(user_id);
+    if (!location) return null;
 
-    const location = locations[0];
     const aqi_data = await getApi(location.lat, location.lon);
     const aqi_level = aqi_data.list[0].main.aqi;
     const pollutants = aqi_data.list[0].components;
@@ -51,13 +50,14 @@ export async function calcExposureScore (user_id)
     const score1 = aqiBase(data.aqi_level);
 
     let exp_score = score1 + score2;
+
+    if ( exp_score>=100 ) exp_score = 100;
+
     return exp_score;
 }
 
 export async function calcExposureLabel (exp_score)
 {
-    if ( exp_score > 100 ) exp_score = 100;
-
     if ( exp_score >=0 && exp_score <=20 )
         return "Safe";
     else if ( exp_score>=21 && exp_score<=40 )

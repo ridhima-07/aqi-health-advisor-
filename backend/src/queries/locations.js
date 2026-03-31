@@ -31,6 +31,12 @@ export async function getLocationByID ( id )
     return locationByID[0];
 };
 
+export async function getLatestLocationByUserID(user_id)
+{
+    const [rows] = await pool.query(`SELECT * FROM locations WHERE user_id = ? ORDER BY id DESC LIMIT 1`,[user_id]);
+    return rows[0];
+};
+
 export async function updateLocationByID ( id, city, state, lat, lon )
 {
     const [updatedLocation] = await pool.query(`UPDATE locations 

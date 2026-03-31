@@ -52,7 +52,7 @@ export async function getAllHealthProfiles ( req, res )
 {
     try { 
         const healthProfile = await getHealthProfile();
-        res.send(healthProfile);
+        res.status(200).json({healthProfile});
     } catch (error) {
         res.status(500).json({message: "Failed to fetch health profiles."});
     }
@@ -65,7 +65,7 @@ export async function getHealthProfileByUserIDController ( req, res )
         const healthProfileByUserID = await getHealthProfileByUserID ( user_id );
         if (!healthProfileByUserID)
             return res.status(404).json({ message: "Health profile not found" });
-        return res.send(healthProfileByUserID);
+        return res.status(200).json({healthProfileByUserID});
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch health profile" });
     }

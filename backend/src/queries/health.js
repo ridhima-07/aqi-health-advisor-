@@ -25,11 +25,11 @@ export async function updateHealthProfileByUserID (user_id, isSmoker, hasHeartCo
     const [updatedHealthProfile] = await pool.query(`UPDATE health_profiles 
         SET isSmoker = ?, hasHeartCondition = ?, hasAsthma = ?, hasCOPD = ?, hasAllergy = ?, health_score = ?
         WHERE user_id = ?`, [isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score, user_id]);
-    return updatedHealthProfile;
+    return updatedHealthProfile[0];
 };
 
 export async function deleteHealthProfileByUserID ( user_id )
 {
     const [healthProfile] = await pool.query(`DELETE FROM health_profiles WHERE user_id = ?`, [user_id]);
-    return healthProfile;
+    return healthProfile[0];
 };

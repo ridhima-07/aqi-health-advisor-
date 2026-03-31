@@ -39,14 +39,14 @@ export async function fetchAQI (req, res) {
 
     const aqiLabel = getAqiLabel ( aqiLevel );
     const riskLevel = calculateRiskLevel ( aqiLevel, healthProfileByUserID );
-    res.send({aqiLabel, aqiLevel, pollutants, riskLevel });
+    res.status(200).json({aqiLabel, aqiLevel, pollutants, riskLevel});
 };
 
 export async function getAqiHistory (req, res) {
     try {
         const location_id = req.params.location_id;
         const aqiHistory = await getAqiReadingsByLocationID(location_id);
-        res.send(aqiHistory);
+        res.status(200).json({aqiHistory});
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch AQI history" });
     }
@@ -56,7 +56,7 @@ export async function getLatestAqi (req, res) {
     try {
         const location_id = req.params.location_id;
         const aqiLatest = await getLatestAqiReadingByLocationID(location_id);
-        res.send(aqiLatest);
+        res.status(200).json({aqiLatest});
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch latest AQI reading" });
     }
