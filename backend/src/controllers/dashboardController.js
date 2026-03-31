@@ -19,6 +19,7 @@ export async function getDashboardData (req, res) {
     const aqi = await getLatestAqiReadingByLocationID (location.id);
     const aqiLabel = getAqiLabel (aqi.aqi_level);
     const riskLevel = calculateRiskLevel (aqi.aqi_level, health_profile);
+    const exp_score = calcExposureScore (id);
     res.send({
   user: user,
   healthProfile: health_profile,
@@ -26,6 +27,6 @@ export async function getDashboardData (req, res) {
   aqi: aqi,
   aqiLabel: aqiLabel,
   riskLevel: riskLevel,
-  aqiHistory: aqis
+  aqiHistory: aqis,
 })
 };

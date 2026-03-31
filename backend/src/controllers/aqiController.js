@@ -3,6 +3,7 @@ dotenv.config();
 
 import { getLocationByID } from "../queries/locations.js";
 import { getHealthProfileByUserID } from "../queries/health.js";
+import { getApi, getAqiLabel, calculateRiskLevel } from "../utils/aqiUtils.js";
 
 import {
     addAqiReading, 
