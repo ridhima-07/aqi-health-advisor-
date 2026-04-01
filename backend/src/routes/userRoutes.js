@@ -13,8 +13,8 @@ import {
 router.post("/", registerUser);
 router.put("/:id", updateUserController);
 router.get("/", getAllUsers);
-router.get("/:id", getUserByIdController);
 router.get("/email/:email", getUserByEmailController);
+router.get("/:id", getUserByIdController);
 router.delete("/:id", deleteUser);
 
 export default router;

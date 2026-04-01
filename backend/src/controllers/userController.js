@@ -10,12 +10,14 @@ import {
 export async function registerUser(req, res) {
     try {
         const {name, dob, email, gender} = req.body;
+        if ( !name || !dob || !email || !gender )
+            return res.status(400).json({success: false, message: "Details incomplete."});
         const newUser = await createUser(name, dob, email, gender);
         if (!newUser)
-            return res.status(400).json({message: "User Details not added."});
-        res.status(200).json({mesage: "User created successfully!"});
+            return res.status(400).json({ success: false, message: "Failed to create user."});
+        res.status(201).json({ success: true, message: "User created successfully!"});
     } catch (error) {
-        res.status(500).json({message: "Failed to create user."});
+        res.status(500).json({ success: false, message: "Failed to create user."});
     }
 };
 
@@ -25,11 +27,11 @@ export async function updateUserController (req, res)
         const id = req.params.id;
         const {name, dob, email, gender} = req.body;
         const updatedUser = await updateUser(id, name, dob, email, gender);
-        if (!updatedUser)
-            return res.status(400).json({message: "User Details not added."});
-        res.status(200).json({mesage: "User updated successfully!"});
+        if (updatedUser.affectedRows===0)
+            return res.status(404).json({ success: false, message: "User not found."});
+        res.status(200).json({ success: true, message: "User updated successfully!"});
     } catch (error) {
-        res.status(500).json({message: "Failed to update user."});
+        res.status(500).json({ success: false, message: "Failed to update user."});
     }
 };
 
@@ -37,9 +39,9 @@ export async function getAllUsers(req,res)
 {
     try {
         const users = await getUsers();
-        res.status(200).json({users});
+        res.status(200).json({ success: true, data: users});
     } catch (error) {
-        res.status(500).json({message: "Failed to fetch users."});
+        res.status(500).json({ success: false, message: "Failed to fetch users."});
     }
 };
 
@@ -49,10 +51,10 @@ export async function getUserByIdController (req, res)
         const id = req.params.id;
         const user = await getUserByID (id);
         if (!user) 
-            return res.status(404).json({message: "User not found."});
-        return res.status(200).json({user});
+            return res.status(404).json({ success: false, message: "User not found."});
+        res.status(200).json({ success: true, data: user});
     } catch (error) {
-        res.status(500).json({message: "Failed to fetch user"});
+        res.status(500).json({ success: false, message: "Failed to fetch user"});
     }
 };
 
@@ -62,10 +64,10 @@ export async function getUserByEmailController (req, res)
         const email = req.params.email;
         const user = await getUserByEmail (email);
         if (!user) 
-            return res.status(404).json({message: "User not found."});
-        return res.status(200).json({user});
+            return res.status(404).json({ success: false, message: "User not found."});
+        res.status(200).json({ success: true, data: user});
     } catch (error) {
-        res.status(500).json({message: "Failed to fetch user"});
+        res.status(500).json({ success: false, message: "Failed to fetch user"});
     }
 };
 
@@ -75,9 +77,9 @@ export async function deleteUser(req, res)
         const id = req.params.id;
         const user = await deleteUserByID(id);
         if ( user.affectedRows === 0 )
-            return res.status(404).json({message: "User not found"});
-        return res.status(200).json({message: "User deleted successfully!"});
+            return res.status(404).json({ success: false, message: "User not found"});
+        res.status(200).json({ success: true, message: "User deleted successfully!"});
     } catch (error) {
-        res.status(500).json({message: "Failed to delete user."});
+        res.status(500).json({ success: false, message: "Failed to delete user."});
     }
 }
