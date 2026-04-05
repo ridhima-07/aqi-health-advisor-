@@ -1,0 +1,749 @@
+/* ============================================================
+   Home.css — AQI IQ Premium Landing Page
+   ============================================================ */
+
+/* ── Google Font import ─────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap");
+
+/* ── CSS Variables — Dark mode (default) ────────────────────── */
+.app-root.dark {
+  --bg:           #0b0d10;
+  --bg-card:      #131620;
+  --bg-card-2:    #1a1e2a;
+  --bg-card-3:    #1f2335;
+  --border:       rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.15);
+  --text-primary: #f0f2f8;
+  --text-secondary: #8b90a0;
+  --text-muted:   #555a6a;
+  --logo-color:   #f0f2f8;
+  --ring-track:   rgba(255,255,255,0.08);
+  --shadow-card:  0 4px 40px rgba(0,0,0,0.5);
+  --shadow-card-hover: 0 8px 60px rgba(0,0,0,0.7);
+  --nav-bg:       rgba(11,13,16,0.85);
+  --grid-color:   rgba(255,255,255,0.025);
+  --eyebrow-bg:   rgba(255,255,255,0.06);
+  --eyebrow-text: rgba(255,255,255,0.5);
+  --assistant-bg: rgba(26,30,42,0.9);
+  --glow-color:   rgba(255,120,60,0.12);
+  --cta-bg:       #131620;
+}
+
+/* ── CSS Variables — Light mode ─────────────────────────────── */
+.app-root.light {
+  --bg:           #f4f5f7;
+  --bg-card:      #ffffff;
+  --bg-card-2:    #f9fafc;
+  --bg-card-3:    #f0f2f8;
+  --border:       rgba(0,0,0,0.07);
+  --border-hover: rgba(0,0,0,0.14);
+  --text-primary: #0e1018;
+  --text-secondary: #5a5f72;
+  --text-muted:   #9ba0b0;
+  --logo-color:   #0e1018;
+  --ring-track:   rgba(0,0,0,0.08);
+  --shadow-card:  0 4px 30px rgba(0,0,0,0.08);
+  --shadow-card-hover: 0 8px 50px rgba(0,0,0,0.14);
+  --nav-bg:       rgba(244,245,247,0.9);
+  --grid-color:   rgba(0,0,0,0.03);
+  --eyebrow-bg:   rgba(0,0,0,0.05);
+  --eyebrow-text: rgba(0,0,0,0.45);
+  --assistant-bg: rgba(255,255,255,0.95);
+  --glow-color:   rgba(255,120,60,0.07);
+  --cta-bg:       #ffffff;
+}
+
+/* ── AQI severity accent colors (shared) ────────────────────── */
+.app-root {
+  --aqi-green:      #3ddc84;
+  --aqi-yellow:     #f5c842;
+  --aqi-orange:     #ff8c42;
+  --aqi-red:        #ff4c4c;
+
+  --aqi-green-dim:  rgba(61,220,132,0.12);
+  --aqi-yellow-dim: rgba(245,200,66,0.12);
+  --aqi-orange-dim: rgba(255,140,66,0.12);
+  --aqi-red-dim:    rgba(255,76,76,0.12);
+}
+
+/* ── Global reset ───────────────────────────────────────────── */
+*,
+*::before,
+*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.app-root {
+  font-family: "DM Sans", sans-serif;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+  min-height: 100vh;
+}
+
+/* ── Shared button styles ───────────────────────────────────── */
+.btn-primary.MuiButton-root {
+  background: var(--text-primary) !important;
+  color: var(--bg) !important;
+  font-family: "DM Sans", sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: none !important;
+  transition: opacity 0.2s, transform 0.15s !important;
+}
+.btn-primary.MuiButton-root:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.btn-ghost.MuiButton-root {
+  border-color: var(--border-hover) !important;
+  color: var(--text-primary) !important;
+  font-family: "DM Sans", sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
+  transition: border-color 0.2s, background 0.2s !important;
+}
+.btn-ghost.MuiButton-root:hover {
+  background: var(--border) !important;
+  border-color: var(--text-secondary) !important;
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 64px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.navbar-logo {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  color: var(--logo-color);
+  cursor: pointer;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 36px;
+  list-style: none;
+}
+.navbar-links a {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.navbar-links a:hover { color: var(--text-primary); }
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle.MuiIconButton-root {
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  width: 36px; height: 36px;
+  transition: color 0.2s, border-color 0.2s !important;
+}
+.theme-toggle.MuiIconButton-root:hover {
+  color: var(--text-primary) !important;
+  border-color: var(--border-hover) !important;
+}
+
+.nav-cta.MuiButton-root {
+  padding: 8px 18px !important;
+  font-size: 0.8125rem !important;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 64px;
+  overflow: hidden;
+}
+
+/* subtle grid background */
+.hero-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.hero-container {
+  display: flex !important;
+  align-items: center;
+  gap: 64px;
+  padding-top: 64px;
+  padding-bottom: 80px;
+}
+
+/* ── Hero Left ───────────────────────────────────────────────── */
+.hero-left {
+  flex: 1;
+  min-width: 0;
+  animation: fadeUp 0.7s ease both;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--eyebrow-text);
+  background: var(--eyebrow-bg);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 5px 14px;
+  margin-bottom: 28px;
+}
+
+.hero-title {
+  font-weight: 800 !important;
+  font-size: clamp(2.2rem, 4vw, 3.4rem) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 24px !important;
+}
+.hero-title-accent {
+  /* keep same color but slightly dimmed for contrast */
+  opacity: 0.65;
+}
+
+.hero-body {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 1.0625rem !important;
+  line-height: 1.75 !important;
+  color: var(--text-secondary) !important;
+  max-width: 480px;
+  margin-bottom: 40px !important;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.hero-trust-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.trust-chip {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ── Hero Right ──────────────────────────────────────────────── */
+.hero-right {
+  flex: 0 0 420px;
+  animation: fadeUp 0.7s 0.15s ease both;
+}
+
+/* ── Dashboard preview ───────────────────────────────────────── */
+.dashboard-preview {
+  position: relative;
+  padding: 8px;
+}
+
+.preview-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px; height: 360px;
+  background: var(--glow-color);
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* shared card base */
+.preview-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+  position: relative;
+}
+
+/* main AQI card */
+.main-card {
+  z-index: 2;
+}
+
+.card-label {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.aqi-number {
+  font-family: "Syne", sans-serif;
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin-bottom: 10px;
+}
+
+.aqi-badge {
+  display: inline-block;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 100px;
+  margin-bottom: 0;
+}
+
+.card-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 22px 0;
+}
+
+/* exposure row */
+.exposure-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.exposure-number {
+  font-family: "Syne", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 6px 0 8px;
+}
+.exposure-unit {
+  font-size: 1rem;
+  font-weight: 400;
+  opacity: 0.5;
+}
+
+.exposure-badge {
+  display: inline-block;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+/* donut ring */
+.exposure-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ring-label {
+  position: absolute;
+  font-family: "Syne", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--aqi-red);
+}
+
+/* advisory line */
+.advisory-line {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  line-height: 1.5;
+}
+
+/* floating mini card */
+.mini-card {
+  margin-top: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mini-card-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.8375rem;
+  color: var(--text-secondary);
+}
+.mini-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   WHY AQI IQ
+   ============================================================ */
+.why-section {
+  padding: 120px 0;
+}
+
+.section-header {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 64px;
+}
+
+.section-eyebrow {
+  display: inline-block;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--eyebrow-text);
+  background: var(--eyebrow-bg);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 5px 14px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-family: "Syne", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(1.8rem, 3vw, 2.4rem) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 16px !important;
+}
+
+.section-subtitle {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 1rem !important;
+  line-height: 1.7 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* feature cards */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 32px 28px;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+}
+.feature-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-3px);
+}
+
+.feature-icon {
+  font-size: 1.75rem;
+  margin-bottom: 20px;
+  display: block;
+  color: var(--text-secondary);
+}
+
+.feature-title {
+  font-family: "Syne", sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 1.0625rem !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 12px !important;
+}
+
+.feature-desc {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 0.9rem !important;
+  line-height: 1.7 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* ============================================================
+   SETUP JOURNEY
+   ============================================================ */
+.setup-section {
+  padding: 0 0 120px;
+}
+
+/* assistant bubble */
+.assistant-bubble {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--assistant-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 24px;
+  max-width: 480px;
+  margin: 0 auto 56px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.assistant-avatar {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--text-primary);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+
+.assistant-name {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.assistant-message {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: opacity 0.25s;
+}
+
+/* step cards */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  position: relative;
+}
+
+.step-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 22px;
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s, background 0.25s;
+}
+.step-card:hover,
+.step-card.step-active {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-3px);
+  background: var(--bg-card-2);
+}
+
+.step-number {
+  font-family: "Syne", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.step-emoji {
+  font-size: 1.5rem;
+  margin-bottom: 14px;
+  display: block;
+  line-height: 1;
+}
+
+.step-title {
+  font-family: "Syne", sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.9375rem !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 8px !important;
+}
+
+.step-desc {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 0.8375rem !important;
+  line-height: 1.65 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* connector between steps */
+.step-connector {
+  display: none; /* handled via CSS grid gap visually */
+}
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+.cta-section {
+  padding: 0 0 120px;
+}
+
+.cta-box {
+  position: relative;
+  background: var(--cta-bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 72px 48px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.cta-glow {
+  position: absolute;
+  top: -80px; left: 50%;
+  transform: translateX(-50%);
+  width: 400px; height: 400px;
+  background: var(--glow-color);
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.cta-title {
+  font-family: "Syne", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(1.8rem, 3vw, 2.5rem) !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 16px !important;
+  position: relative;
+}
+
+.cta-subtitle {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 1rem !important;
+  color: var(--text-secondary) !important;
+  margin-bottom: 40px !important;
+  position: relative;
+}
+
+.cta-btn.MuiButton-root {
+  padding: 14px 36px !important;
+  font-size: 0.9375rem !important;
+  position: relative;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-logo {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.footer-copy {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .hero-container {
+    flex-direction: column !important;
+    gap: 48px;
+    padding-top: 100px;
+  }
+  .hero-right { flex: unset; width: 100%; max-width: 420px; margin: 0 auto; }
+  .hero-left  { text-align: center; }
+  .hero-ctas  { justify-content: center; }
+  .hero-trust-row { justify-content: center; }
+  .hero-body  { margin-left: auto; margin-right: auto; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .steps-grid   { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 20px;
+  }
+  .navbar-links { display: none; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .footer { flex-direction: column; gap: 12px; text-align: center; }
+  .cta-box { padding: 48px 24px; }
+}

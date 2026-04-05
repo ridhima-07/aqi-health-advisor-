@@ -15,7 +15,7 @@ export async function registerUser(req, res) {
         const newUser = await createUser(name, dob, email, gender);
         if (!newUser)
             return res.status(400).json({ success: false, message: "Failed to create user."});
-        res.status(201).json({ success: true, message: "User created successfully!"});
+        res.status(201).json({ success: true, message: "User created successfully!", data: {id: newUser.insertId}});
     } catch (error) {
         res.status(500).json({ success: false, message: "Failed to create user."});
     }
