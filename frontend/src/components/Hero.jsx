@@ -41,7 +41,7 @@ const STEPS = [
     id:    1,
     icon: "1",
     title: "Create Profile",
-    hint:  "Name and email to get started",
+    hint:  "Basic details to set up your account",
   },
   {
     id:    2,
@@ -271,19 +271,13 @@ function StepTracker({ activeStep, completedSteps, onStepClick }) {
 // ─────────────────────────────────────────────────────────────
 function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading, error }) {
 
-    error && (
-                <Typography sx={{ color: "#ef4444", fontSize: "14px" }}>
-                    {error}
-                </Typography>
-                )
-
   // Helper: update a single field inside formData
   function handleChange(field, value) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }
 
-  // Helper: toggle a checkbox value in the health conditions array
-  // → backend: send formData.conditions as array to API
+  // Helper: toggle a health condition boolean field
+  // → backend: send formData booleans directly to API
   function toggleCondition(field) {
     setFormData((prev) => ({
         ...prev,
@@ -313,7 +307,7 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
         <Box className="form-step">
           <Typography className="form-step-title">Create your profile</Typography>
           <Typography className="form-step-sub">
-            Start with your name and email — that's all we need for now.
+            Start with your basic details so we can create your profile.
           </Typography>
           <Box className="form-fields">
             <TextField
@@ -361,7 +355,7 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
           <Typography className="form-step-sub">
             Select any conditions that apply. This personalizes your exposure score.
           </Typography>
-          {/* → backend: send formData.conditions array */}
+          {/* → backend: send health booleans directly */}
             <Box className="form-checkboxes">
                 {HEALTH_CONDITIONS.map((cond) => (
                     <FormControlLabel
@@ -444,6 +438,12 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
 
       {/* ── Navigation buttons ── */}
       {activeStep < 3 && (
+        <>
+        {error && (
+          <Typography sx={{ color: "#ef4444", fontSize: "14px", marginTop: "8px" }}>
+            {error}
+          </Typography>
+        )}
         <Box className="form-nav">
           {activeStep > 0 && (
             <Button className="btn-ghost" onClick={onBack}>← Back</Button>
@@ -452,6 +452,7 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
             {loading ? "Saving..." : activeStep === 2 ? "Finish Setup" : "Continue →"}
             </Button>
         </Box>
+        </>
       )}
 
       {/* Step progress indicator */}
@@ -583,13 +584,20 @@ export default function Hero() {
     setActiveStep(index);
   }
 
+  function scrollToSetup() {
+  const el = document.querySelector(".setup-section");
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth" });
+  }
+}
+
   return (
     <Box className={"page-root"}>
 
       {/* ════════════════════════════════════════════════════
           SECTION 1 — HERO
       ════════════════════════════════════════════════════ */}
-      <Box component="section" className="hero-section">
+      <Box component="section" className="hero-section" id="aqi-info">
         {/* Decorative radial background accent */}
         <Box className="hero-bg-glow" />
 
@@ -632,8 +640,12 @@ export default function Hero() {
 
             {/* CTA buttons */}
             <Box className="hero-ctas">
-              <Button className="btn-primary">Get Started</Button>
-              <Button className="btn-ghost">Learn More</Button>
+              <Button className="btn-primary" onClick={scrollToSetup}>
+                Get Started
+              </Button>
+              <Button className="btn-ghost" onClick={scrollToSetup}>
+                Learn More
+              </Button>
             </Box>
           </Box>
 
@@ -651,7 +663,7 @@ export default function Hero() {
       {/* ════════════════════════════════════════════════════
           SECTION 2 — SETUP JOURNEY
       ════════════════════════════════════════════════════ */}
-      <Box component="section" className="setup-section">
+      <Box component="section" className="setup-section" id="setup">
         <Box className="setup-section-header">
             <Typography className="setup-eyebrow">Setup Journey</Typography>
             <Typography className="setup-heading">
