@@ -1,346 +1,411 @@
-import { Box, Typography, Button } from "@mui/material";
-import "../styles/Dashboard.css";
+import React from 'react';
+import '../styles/Dashboard.css';
 
-// ══════════════════════════════════════════════════════════════════════════════
-// PLACEHOLDER DATA
-// Replace these values with real props or API responses later.
-// Each variable is clearly named so you know what to wire up.
-// ══════════════════════════════════════════════════════════════════════════════
-const PLACEHOLDER = {
-  location:      "Mumbai, Maharashtra",
-  updatedAt:     "Today at 9:41 AM",
+// ─── Placeholder Data ──────────────────────────────────────────────────────
+// Replace with real API data or props when ready.
+const DATA = {
+  location:      'Mumbai, Bandra West',
+  updatedAt:     'Updated 4 min ago',
 
-  // AQI card
-  aqiValue:      156,
-  aqiLabel:      "Poor",
-  aqiLevel:      "poor",          // "good" | "fair" | "moderate" | "poor"
+  // AQI
+  aqiValue:      143,
+  aqiLabel:      'Moderate',    // 'Good' | 'Fair' | 'Moderate' | 'Poor'
 
-  // Exposure score card
-  exposureScore: 72,
-  exposureLabel: "High Risk",
-  exposureLevel: "poor",          // same scale as aqiLevel
+  // Decision strip
+  exposureScore: 68,
+  riskLevel:     'Moderate Risk',
+  action:        'Stay indoors',
+  actionDetail:  'if sensitive',  // appended in severity color
 
-  // Recommendation card
-  nextBestAction:  "Stay indoors and keep windows closed.",
-  actionReason:    "AQI is in the Poor range and your respiratory profile raises your personal risk.",
+  // Health advisory (max 4 bullets)
+  advisory: [
+    'Avoid prolonged outdoor exertion.',
+    'Keep windows closed; run air purifier if available.',
+    'Wear N95 mask if going outside.',
+    'Sensitive groups (asthma, elderly) should stay indoors.',
+  ],
 
-  // Health advisory card
-  advisoryText:
-    "Air quality is poor today, and your respiratory sensitivity increases your exposure risk significantly. Limit all prolonged outdoor activity. If you must go outside, wear a well-fitted N95 mask and keep exposure under 30 minutes.",
-
-  // Pollutants (value + unit + level)
+  // Pollutants
   pollutants: [
-    { name: "PM2.5", value: 89,   unit: "µg/m³", level: "poor"     },
-    { name: "PM10",  value: 134,  unit: "µg/m³", level: "poor"     },
-    { name: "CO",    value: 1.4,  unit: "mg/m³", level: "moderate" },
-    { name: "NO₂",   value: 42,   unit: "µg/m³", level: "fair"     },
-    { name: "O₃",    value: 68,   unit: "µg/m³", level: "moderate" },
+    { name: 'PM2.5',  value: 58.4, unit: 'µg/m³', pct: 78, level: 'moderate' },
+    { name: 'PM10',   value: 92.1, unit: 'µg/m³', pct: 62, level: 'moderate' },
+    { name: 'NO₂',   value: 34.2, unit: 'ppb',    pct: 45, level: 'fair'     },
+    { name: 'O₃',    value: 18.7, unit: 'ppb',    pct: 28, level: 'good'     },
+    { name: 'CO',     value: 0.9,  unit: 'ppm',    pct: 18, level: 'good'     },
   ],
 
-  // AQI trend — last 7 readings (replace with real data later)
-  trend: [
-    { label: "Mon", value: 98  },
-    { label: "Tue", value: 112 },
-    { label: "Wed", value: 88  },
-    { label: "Thu", value: 145 },
-    { label: "Fri", value: 162 },
-    { label: "Sat", value: 156 },
-    { label: "Sun", value: 156 },
-  ],
+  // Trend — last 8 readings (oldest → newest), 0–500
+  trend: [88, 101, 119, 134, 128, 143, 156, 143],
+  trendHours: ['6h', '5h', '4h', '3h', '2h', '1h', '30m', 'Now'],
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════════════════════════
+// ─── Helpers ───────────────────────────────────────────────────────────────
 
-// Returns the CSS class suffix for a given AQI level string
-const levelClass = (level) => `level-${level}`;
+function severityClass(aqiValue) {
+  if (aqiValue <= 50)  return 'sev-good';
+  if (aqiValue <= 100) return 'sev-fair';
+  if (aqiValue <= 200) return 'sev-moderate';
+  return 'sev-poor';
+}
 
-// AQI severity scale steps used in the AQI card
-const AQI_SCALE = [
-  { label: "Good",     max: 50  },
-  { label: "Fair",     max: 100 },
-  { label: "Moderate", max: 150 },
-  { label: "Poor",     max: 200 },
-  { label: "Severe",   max: 300 },
-];
+// AQI 0–500 → thumb position % on the scale bar
+function aqiToPercent(value) {
+  return Math.min(100, Math.max(0, (value / 500) * 100));
+}
 
-// Which step is currently active based on aqiValue
-const activeScaleIndex = (value) =>
-  AQI_SCALE.findIndex((s) => value <= s.max);
+// ─── Sub-components ────────────────────────────────────────────────────────
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MINI COMPONENTS
-// ══════════════════════════════════════════════════════════════════════════════
-
-// Circular arc showing exposure score (pure SVG — no library needed)
-function ExposureRing({ score, level }) {
-  const r = 52;
-  const circ = 2 * Math.PI * r;
-  const filled = (score / 100) * circ;
-
+function RefreshIcon() {
   return (
-    <svg className="exposure-ring-svg" viewBox="0 0 128 128" width="128" height="128">
-      {/* track */}
-      <circle
-        cx="64" cy="64" r={r}
-        fill="none"
-        stroke="rgba(255,255,255,0.06)"
-        strokeWidth="9"
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M13.65 2.35A8 8 0 1 0 15 8h-2a6 6 0 1 1-1.05-3.39L10 6.5h5V1.5l-1.35.85z"
+        fill="currentColor"
       />
-      {/* filled arc */}
-      <circle
-        cx="64" cy="64" r={r}
-        fill="none"
-        className={`ring-arc ${levelClass(level)}`}
-        strokeWidth="9"
-        strokeLinecap="round"
-        strokeDasharray={`${filled} ${circ}`}
-        transform="rotate(-90 64 64)"
-      />
-      {/* center score */}
-      <text
-        x="64" y="58"
-        textAnchor="middle"
-        className={`ring-score-num ${levelClass(level)}`}
-        fontSize="26"
-        fontWeight="800"
-        fontFamily="Inter, sans-serif"
-      />
-      <text
-        x="64" y="78"
-        textAnchor="middle"
-        fill="#9BA4B5"
-        fontSize="11"
-        fontWeight="500"
-        fontFamily="Inter, sans-serif"
-      >
-        / 100
-      </text>
     </svg>
   );
 }
 
-// Inline sparkline bar chart for trend (no charting library)
-function TrendChart({ trend }) {
-  const max = Math.max(...trend.map((t) => t.value));
-  const min = Math.min(...trend.map((t) => t.value));
-  const chartH = 72;
-
-  // Normalize a value to a 0–chartH pixel height
-  const barH = (v) =>
-    Math.round(((v - min) / (max - min + 1)) * (chartH - 12) + 12);
-
-  // Color each bar based on its AQI value
-  const barLevel = (v) => {
-    if (v <= 50)  return "good";
-    if (v <= 100) return "fair";
-    if (v <= 150) return "moderate";
-    return "poor";
-  };
+// CHANGE 1 — Circular exposure ring for the hero right column
+function ExposureRing({ score, label }) {
+  const RADIUS = 51;                        // was 44 — scaled for 136px container
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  const dashOffset = CIRCUMFERENCE * (1 - score / 100);
 
   return (
-    <div className="trend-chart">
-      {trend.map((t, i) => (
-        <div key={i} className="trend-col">
-          <div className="trend-bar-wrap" style={{ height: chartH }}>
-            <div
-              className={`trend-bar ${levelClass(barLevel(t.value))}`}
-              style={{ height: barH(t.value) }}
-            >
-              <span className="trend-bar-value">{t.value}</span>
-            </div>
-          </div>
-          <span className="trend-day">{t.label}</span>
+    <div className="hero-exposure" aria-label={`Exposure score ${score} out of 100, ${label}`}>
+      <div className="exposure-ring-wrap">
+        <svg
+          className="exposure-ring-svg"
+          viewBox="0 0 136 136"              /* was 104 104 */
+          aria-hidden="true"
+        >
+          <defs>
+            <filter id="exp-glow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          {/* Track */}
+          <circle
+            cx="68" cy="68" r={RADIUS}     /* was cx/cy 52 */
+            fill="none"
+            stroke="rgba(255,255,255,0.07)"
+            strokeWidth="8.5"              /* was 7 — thicker stroke */
+          />
+          {/* Progress arc */}
+          <circle
+            cx="68" cy="68" r={RADIUS}
+            fill="none"
+            stroke="var(--sev, #fb923c)"
+            strokeWidth="8.5"
+            strokeLinecap="round"
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={dashOffset}
+            transform="rotate(-90 68 68)"  /* was rotate(-90 52 52) */
+            filter="url(#exp-glow)"
+          />
+        </svg>
+
+        {/* Center text */}
+        <div className="exposure-ring-center">
+          <span className="exposure-ring-score">{score}</span>
+          <span className="exposure-ring-denom">/ 100</span>
         </div>
-      ))}
+      </div>
+
+      {/* Label below ring */}
+      <div className="exposure-ring-meta">
+        <span className="exposure-ring-heading">Exposure</span>
+        <span className="exposure-ring-label">{label}</span>
+      </div>
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MAIN DASHBOARD
-// ══════════════════════════════════════════════════════════════════════════════
-export default function Dashboard({ data = PLACEHOLDER }) {
-  const {
-    location, updatedAt,
-    aqiValue, aqiLabel, aqiLevel,
-    exposureScore, exposureLabel, exposureLevel,
-    nextBestAction, actionReason,
-    advisoryText,
-    pollutants,
-    trend,
-  } = data;
-
-  const scaleActive = activeScaleIndex(aqiValue);
+// ─── Section 1: Hero ───────────────────────────────────────────────────────
+function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposureLabel, onFetch }) {
+  const thumbLeft = aqiToPercent(aqiValue);
 
   return (
-    <div className="dashboard">
+    <section className="hero" aria-label="Current AQI">
 
-      {/* ── PAGE HEADER ─────────────────────────────────────────────────── */}
-      <header className="dash-header">
-        <div className="dash-header-left">
-          <Typography className="dash-page-title">Dashboard</Typography>
-          <Typography className="dash-subtitle">
-            Personalized air quality insights for your location
-          </Typography>
+      {/* Top bar — location only (fetch btn moved to right column) */}
+      <div className="hero-bar">
+        <div className="hero-location-group">
+          <span className="hero-location">{location}</span>
+          <span className="hero-updated">{updatedAt}</span>
         </div>
-        <div className="dash-header-right">
-          <div className="dash-location-chip">
-            <span className="location-dot" />
-            {location}
-          </div>
-          <span className="dash-updated">Updated {updatedAt}</span>
-        </div>
-      </header>
 
-      {/* ── ROW 1: AQI + EXPOSURE ───────────────────────────────────────── */}
-      <div className="dash-row row-primary">
+        <button className="fetch-btn" onClick={onFetch} aria-label="Fetch latest AQI">
+          <RefreshIcon />
+          Fetch Latest
+        </button>
+      </div>
 
-        {/* ── AQI CARD ──────────────────────────────────────────────────── */}
-        <div className={`dash-card aqi-card ${levelClass(aqiLevel)}`}>
-          {/* corner glow based on severity */}
-          <div className="card-corner-glow" />
+      {/* Main body: AQI left, right vertical stack */}
+      <div className="hero-body">
 
-          <div className="card-top-row">
-            <span className="card-location-label">{location}</span>
-            <span className="card-time-label">{updatedAt}</span>
-          </div>
-
-          {/* central AQI number */}
-          <div className="aqi-center">
-            <Typography className={`aqi-big-number ${levelClass(aqiLevel)}`}>
+        {/* Left: AQI number + scale */}
+        <div className="hero-aqi-block">
+          <div className="hero-aqi">
+            <span className="aqi-number" aria-label={`AQI ${aqiValue}`}>
               {aqiValue}
-            </Typography>
-            <span className={`aqi-status-pill ${levelClass(aqiLevel)}`}>
-              {aqiLabel}
             </span>
+            <div className="aqi-label-group">
+              <span className="aqi-label">{aqiLabel}</span>
+              <span className="aqi-standard">AQI · US Standard</span>
+            </div>
           </div>
 
-          {/* AQI severity scale */}
           <div className="aqi-scale">
-            {AQI_SCALE.map((step, i) => (
-              <div key={step.label} className="scale-step">
-                <div
-                  className={`scale-seg ${i === scaleActive ? "scale-active" : ""}`}
-                  data-level={
-                    ["good","fair","moderate","poor","poor"][i]
-                  }
-                />
-                {i === scaleActive && (
-                  <span className="scale-marker">▲</span>
-                )}
-                <span
-                  className={`scale-label ${i === scaleActive ? "scale-label-active" : ""}`}
-                >
-                  {step.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── EXPOSURE SCORE CARD ───────────────────────────────────────── */}
-        <div className={`dash-card exposure-card ${levelClass(exposureLevel)}`}>
-          <div className="card-corner-glow" />
-
-          <div className="exposure-header">
-            <Typography className="card-section-title">Exposure Score</Typography>
-            <span className={`aqi-status-pill ${levelClass(exposureLevel)}`}>
-              {exposureLabel}
-            </span>
-          </div>
-
-          <div className="exposure-body">
-            {/* ring with score */}
-            <div className="ring-wrapper">
-              <ExposureRing score={exposureScore} level={exposureLevel} />
-              {/* overlay the number since SVG foreignObject is tricky */}
-              <div className="ring-center-overlay">
-                <span className={`ring-score-text ${levelClass(exposureLevel)}`}>
-                  {exposureScore}
-                </span>
-                <span className="ring-max">/100</span>
-              </div>
+            <div className="scale-track">
+              <div
+                className="scale-thumb"
+                style={{ left: `${thumbLeft}%` }}
+                role="img"
+                aria-label={`${aqiValue} on scale of 0 to 500`}
+              />
             </div>
-
-            <div className="exposure-meta">
-              <p className="exposure-explain">
-                Your exposure score combines AQI with your personal health profile.
-                A score of <strong style={{ color: "inherit" }}>{exposureScore}</strong> means
-                today carries a significantly elevated breathing risk for your profile.
-              </p>
-              <div className="exposure-bar-track">
-                <div
-                  className={`exposure-bar-fill ${levelClass(exposureLevel)}`}
-                  style={{ width: `${exposureScore}%` }}
-                />
-              </div>
-              <div className="exposure-bar-labels">
-                <span>Safe</span>
-                <span>Moderate</span>
-                <span>High Risk</span>
-              </div>
+            <div className="scale-labels">
+              <span>Good</span>
+              <span>Fair</span>
+              <span>Moderate</span>
+              <span>Poor</span>
             </div>
           </div>
         </div>
+
+        {/* Right: fetch button on top, exposure ring below — vertical stack */}
+        <div className="hero-right-col">
+          <ExposureRing score={exposureScore} label={exposureLabel} />
+        </div>
+
       </div>
 
-      {/* ── ROW 2: ACTION + ADVISORY ────────────────────────────────────── */}
-      <div className="dash-row row-secondary">
+    </section>
+  );
+}
 
-        {/* ── NEXT BEST ACTION ──────────────────────────────────────────── */}
-        <div className="dash-card action-card">
-          <div className="action-tag">Next Best Action</div>
-          <Typography className="action-headline">{nextBestAction}</Typography>
-          <Typography className="action-reason">{actionReason}</Typography>
-          <Button className="see-all-btn" variant="text">
-            See all recommendations →
-          </Button>
-        </div>
+// ─── Section 2: Decision Strip ─────────────────────────────────────────────
+// CHANGE 2 — Exposure Score removed; only Risk Level + Best Action remain
+// CHANGE 3 — "View all recommendations" link added under Best Action
+function DecisionStrip({ riskLevel, action, actionDetail }) {
+  return (
+    <div className="strip" role="region" aria-label="Decision summary">
 
-        {/* ── HEALTH ADVISORY ───────────────────────────────────────────── */}
-        <div className="dash-card advisory-card">
-          <div className="advisory-tag">Health Advisory</div>
-          <Typography className="advisory-label">Personalized for your profile</Typography>
-          <Typography className="advisory-body">{advisoryText}</Typography>
-        </div>
+      <div className="strip-item">
+        <span className="strip-label">Risk Level</span>
+        <span className="strip-value">{riskLevel}</span>
       </div>
 
-      {/* ── ROW 3: POLLUTANTS ───────────────────────────────────────────── */}
-      <section className="dash-section">
-        <div className="section-header">
-          <Typography className="section-title">Pollutant Breakdown</Typography>
-          <span className="section-note">Live readings · {updatedAt}</span>
-        </div>
-        <div className="pollutants-grid">
-          {pollutants.map((p) => (
-            <div key={p.name} className={`pollutant-card ${levelClass(p.level)}`}>
-              <div className={`pollutant-bar ${levelClass(p.level)}`} />
-              <div className="pollutant-name">{p.name}</div>
-              <div className={`pollutant-value ${levelClass(p.level)}`}>
-                {p.value}
-                <span className="pollutant-unit">{p.unit}</span>
-              </div>
-              <span className={`pollutant-pill ${levelClass(p.level)}`}>
-                {p.level.charAt(0).toUpperCase() + p.level.slice(1)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── ROW 4: AQI TREND ────────────────────────────────────────────── */}
-      <section className="dash-section">
-        <div className="section-header">
-          <Typography className="section-title">7-Day AQI Trend</Typography>
-          <span className="section-note">Placeholder — replace with backend data</span>
-        </div>
-        <div className="dash-card trend-card">
-          <TrendChart trend={trend} />
-        </div>
-      </section>
+      <div className="strip-item strip-item--action">
+        <span className="strip-label">Best Action</span>
+        <span className="strip-value">
+          {action}{' '}
+          <span>{actionDetail}</span>
+        </span>
+        {/* CHANGE 3 — subtle "View all recommendations" link */}
+        <a href="#advisory" className="view-all-link">
+          View all recommendations →
+        </a>
+      </div>
 
     </div>
+  );
+}
+
+// CHANGE 4 — Bold the leading action word in each advisory bullet
+// Words to bold: Avoid, Keep, Wear, Stay
+const ACTION_WORDS = ['Avoid', 'Keep', 'Wear', 'Stay'];
+
+function BoldActionWord({ text }) {
+  for (const word of ACTION_WORDS) {
+    if (text.startsWith(word)) {
+      return (
+        <>
+          <strong className="advisory-keyword">{word}</strong>
+          {text.slice(word.length)}
+        </>
+      );
+    }
+  }
+  return <>{text}</>;
+}
+
+// ─── Section 3A: Health Advisory ──────────────────────────────────────────
+function HealthAdvisory({ items }) {
+  return (
+    // CHANGE 3 — id="advisory" so the "View all recommendations" anchor scrolls here
+    <div className="panel" id="advisory">
+      <h2 className="panel-title">Health Advisory</h2>
+      <ul className="advisory-list" aria-label="Health advisory points">
+        {items.map((text, i) => (
+          <li key={i} className="advisory-item">
+            <span className="advisory-dot" aria-hidden="true" />
+            {/* CHANGE 4 — bold leading action word */}
+            <BoldActionWord text={text} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ─── Section 3B: Pollutant Breakdown ──────────────────────────────────────
+function PollutantBreakdown({ pollutants }) {
+  return (
+    <div className="panel">
+      <h2 className="panel-title">Pollutant Breakdown</h2>
+      <div className="pollutant-list">
+        {pollutants.map((p) => (
+          <div key={p.name} className="pollutant-row">
+            <div className="pollutant-header">
+              <span className="pollutant-name">{p.name}</span>
+              <div className="pollutant-meta">
+                <span className="pollutant-value">{p.value} {p.unit}</span>
+                <span className={`pollutant-badge badge-${p.level}`}>{p.level}</span>
+              </div>
+            </div>
+            <div className="pollutant-bar-track">
+              <div
+                className={`pollutant-bar-fill fill-${p.level}`}
+                style={{ width: `${p.pct}%` }}
+                role="progressbar"
+                aria-valuenow={p.pct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Section 4: Trend Sparkline ────────────────────────────────────────────
+function TrendPanel({ values, labels, sevClass }) {
+  // Map values (0–500 scale) to SVG Y coordinates (72px tall, reversed)
+  const W = 800;
+  const H = 72;
+  const PAD = 10;
+  const max = 500;
+
+  const points = values.map((v, i) => {
+    const x = PAD + (i / (values.length - 1)) * (W - PAD * 2);
+    const y = H - PAD - ((v / max) * (H - PAD * 2));
+    return `${x},${y}`;
+  });
+
+  const polyline = points.join(' ');
+
+  // Build closed path for area fill
+  const firstX = PAD;
+  const lastX  = W - PAD;
+  const areaPath = `M${firstX},${H} ${points.map((p) => `L${p}`).join(' ')} L${lastX},${H} Z`;
+
+  return (
+    <div className="trend-panel" role="region" aria-label="AQI trend">
+      <div className="trend-header">
+        <span className="trend-title">AQI Trend · Last 8 Readings</span>
+        <span className="trend-legend">Current: {values[values.length - 1]}</span>
+      </div>
+
+      <svg
+        className="trend-chart"
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stopColor="var(--sev, #fb923c)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--sev, #fb923c)" stopOpacity="0"    />
+          </linearGradient>
+        </defs>
+
+        {/* Area fill */}
+        <path className="trend-area" d={areaPath} />
+
+        {/* Line */}
+        <polyline className="trend-line" points={polyline} />
+
+        {/* Dots at each data point */}
+        {points.map((pt, i) => {
+          const [x, y] = pt.split(',').map(Number);
+          return (
+            <circle
+              key={i}
+              cx={x}
+              cy={y}
+              r={i === points.length - 1 ? 4 : 2.5}
+              fill={i === points.length - 1 ? 'var(--sev, #fb923c)' : '#252b36'}
+              stroke="var(--sev, #fb923c)"
+              strokeWidth="1.5"
+            />
+          );
+        })}
+      </svg>
+
+      <div className="trend-labels">
+        {labels.map((l) => (
+          <span key={l}>{l}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard (root export) ───────────────────────────────────────────────
+export default function Dashboard() {
+  const sevClass = severityClass(DATA.aqiValue);
+
+  function handleFetch() {
+    // Wire your real fetch logic here
+    console.log('Fetching latest AQI…');
+  }
+
+  return (
+    <main className={`dashboard ${sevClass}`}>
+      <header className="dashboard-page-header">
+        <h1 className="dashboard-page-title">DASHBOARD</h1>
+      </header>
+      {/* ── Section 1: Hero ─────────────────────────── */}
+      <Hero
+        location={DATA.location}
+        updatedAt={DATA.updatedAt}
+        aqiValue={DATA.aqiValue}
+        aqiLabel={DATA.aqiLabel}
+        exposureScore={DATA.exposureScore}
+        exposureLabel={DATA.riskLevel}
+        onFetch={handleFetch}
+      />
+
+      {/* ── Section 2: Decision Strip ────────────────── */}
+      {/* CHANGE 2: exposureScore removed — now lives in hero */}
+      <DecisionStrip
+        riskLevel={DATA.riskLevel}
+        action={DATA.action}
+        actionDetail={DATA.actionDetail}
+      />
+
+      {/* ── Section 3: Content Grid ──────────────────── */}
+      <div className="content-grid">
+        <HealthAdvisory items={DATA.advisory} />
+        <PollutantBreakdown pollutants={DATA.pollutants} />
+      </div>
+
+      {/* ── Section 4: Trend ─────────────────────────── */}
+      <TrendPanel
+        values={DATA.trend}
+        labels={DATA.trendHours}
+        sevClass={sevClass}
+      />
+
+    </main>
   );
 }
