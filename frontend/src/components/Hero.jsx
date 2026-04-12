@@ -473,7 +473,7 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
 // MAIN EXPORT: Hero
 // Holds all state and renders both sections.
 // ─────────────────────────────────────────────────────────────
-export default function Hero() {
+export default function Hero({onComplete}) {
 
 
   // ── Active step in the setup journey (0–3)
@@ -565,7 +565,18 @@ export default function Hero() {
       setCompletedSteps((prev) => [...prev, activeStep]);
     }
 
-    setActiveStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    if (activeStep === 2) {
+      setCompletedSteps((prev) =>
+        prev.includes(3) ? prev : [...prev, 3]
+      );
+
+      if (onComplete) {
+        onComplete();
+      }
+    } else {
+      setActiveStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    }
+
   } catch (err) {
     console.error(err);
     setError(err.message || "Something went wrong.");

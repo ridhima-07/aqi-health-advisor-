@@ -1,43 +1,46 @@
-import React from 'react';
-import '../styles/Dashboard.css';
+import React, { useEffect, useState } from "react";
+import { getDashboardData, fetchLatestAqi } from "../services/dashboardServices";
+import "../styles/Dashboard.css";
 
 // ─── Placeholder Data ──────────────────────────────────────────────────────
 // Replace with real API data or props when ready.
-const DATA = {
-  location:      'Mumbai, Bandra West',
-  updatedAt:     'Updated 4 min ago',
+// const DATA = {
+//   location:      'Mumbai, Bandra West',
+//   updatedAt:     'Updated 4 min ago',
 
-  // AQI
-  aqiValue:      143,
-  aqiLabel:      'Moderate',    // 'Good' | 'Fair' | 'Moderate' | 'Poor'
+//   // AQI
+//   aqiValue:      143,
+//   aqiLabel:      'Moderate',    // 'Good' | 'Fair' | 'Moderate' | 'Poor'
 
-  // Decision strip
-  exposureScore: 68,
-  riskLevel:     'Moderate Risk',
-  action:        'Stay indoors',
-  actionDetail:  'if sensitive',  // appended in severity color
+//   // Decision strip
+//   exposureScore: 68,
+//   riskLevel:     'Moderate Risk',
+//   action:        'Stay indoors',
+//   actionDetail:  'if sensitive',  // appended in severity color
 
-  // Health advisory (max 4 bullets)
-  advisory: [
-    'Avoid prolonged outdoor exertion.',
-    'Keep windows closed; run air purifier if available.',
-    'Wear N95 mask if going outside.',
-    'Sensitive groups (asthma, elderly) should stay indoors.',
-  ],
+//   // Health advisory (max 4 bullets)
+//   advisory: [
+//     'Avoid prolonged outdoor exertion.',
+//     'Keep windows closed; run air purifier if available.',
+//     'Wear N95 mask if going outside.',
+//     'Sensitive groups (asthma, elderly) should stay indoors.',
+//   ],
 
-  // Pollutants
-  pollutants: [
-    { name: 'PM2.5',  value: 58.4, unit: 'µg/m³', pct: 78, level: 'moderate' },
-    { name: 'PM10',   value: 92.1, unit: 'µg/m³', pct: 62, level: 'moderate' },
-    { name: 'NO₂',   value: 34.2, unit: 'ppb',    pct: 45, level: 'fair'     },
-    { name: 'O₃',    value: 18.7, unit: 'ppb',    pct: 28, level: 'good'     },
-    { name: 'CO',     value: 0.9,  unit: 'ppm',    pct: 18, level: 'good'     },
-  ],
+//   // Pollutants
+//   pollutants: [
+//     { name: 'PM2.5',  value: 58.4, unit: 'µg/m³', pct: 78, level: 'moderate' },
+//     { name: 'PM10',   value: 92.1, unit: 'µg/m³', pct: 62, level: 'moderate' },
+//     { name: 'NO₂',   value: 34.2, unit: 'ppb',    pct: 45, level: 'fair'     },
+//     { name: 'O₃',    value: 18.7, unit: 'ppb',    pct: 28, level: 'good'     },
+//     { name: 'CO',     value: 0.9,  unit: 'ppm',    pct: 18, level: 'good'     },
+//   ],
 
-  // Trend — last 8 readings (oldest → newest), 0–500
-  trend: [88, 101, 119, 134, 128, 143, 156, 143],
-  trendHours: ['6h', '5h', '4h', '3h', '2h', '1h', '30m', 'Now'],
-};
+//   // Trend — last 8 readings (oldest → newest), 0–500
+//   trend: [88, 101, 119, 134, 128, 143, 156, 143],
+//   trendHours: ['6h', '5h', '4h', '3h', '2h', '1h', '30m', 'Now'],
+// };
+
+
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -157,7 +160,6 @@ function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposure
             </span>
             <div className="aqi-label-group">
               <span className="aqi-label">{aqiLabel}</span>
-              <span className="aqi-standard">AQI · US Standard</span>
             </div>
           </div>
 
@@ -362,12 +364,164 @@ function TrendPanel({ values, labels, sevClass }) {
 
 // ─── Dashboard (root export) ───────────────────────────────────────────────
 export default function Dashboard() {
-  const sevClass = severityClass(DATA.aqiValue);
+  // const sevClass = severityClass(DATA.aqiValue);
 
-  function handleFetch() {
-    // Wire your real fetch logic here
-    console.log('Fetching latest AQI…');
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+  async function loadDashboard() {
+    try {
+      setLoading(true);
+      setError("");
+
+      // temporary hardcoded user id for now
+      const userId = 1;
+
+      const result = await getDashboardData(userId);
+      setDashboardData(result.data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
   }
+
+  loadDashboard();
+}, []);
+
+  async function handleFetch() {
+  try {
+    if (!dashboardData?.location?.id) return;
+
+    const latestAqiResponse = await fetchLatestAqi(dashboardData.location.id);
+    const latestAqi = latestAqiResponse.data;
+
+    setDashboardData((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        aqi: latestAqi,
+        aqiLabel: prev.aqiLabel, // temporary until recalculated below
+      };
+    });
+
+    // reload complete dashboard so exposure, advisory, and other derived fields stay correct
+    const refreshed = await getDashboardData(dashboardData.user.id);
+    setDashboardData(refreshed.data);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to fetch latest AQI.");
+  }
+}
+
+  const currentData = dashboardData || null;
+
+  if (loading) {
+    return (
+      <main className="dashboard">
+        <header className="dashboard-page-header">
+          <h1 className="dashboard-page-title">DASHBOARD</h1>
+        </header>
+        <p style={{ color: "#9BA4B5" }}>Loading dashboard...</p>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="dashboard">
+        <header className="dashboard-page-header">
+          <h1 className="dashboard-page-title">DASHBOARD</h1>
+        </header>
+        <p style={{ color: "#f87171" }}>{error}</p>
+      </main>
+    );
+  }
+
+  if (!currentData) {
+          return null;
+        }
+
+  const trendValues =
+  currentData.aqiHistory?.length
+    ? currentData.aqiHistory.map((item) => item.aqi_value || item.aqiValue || 0)
+    : [currentData.aqi.aqiValue];
+
+  const trendLabels =
+    currentData.aqiHistory?.length
+      ? currentData.aqiHistory.map((_, index) => `${currentData.aqiHistory.length - index}h`)
+      : ["Now"];
+
+  const sevClass = currentData?.aqi?.aqiValue
+  ? severityClass(currentData.aqi.aqiValue)
+  : "sev-moderate";
+
+  const pollutantData = [
+          {
+            name: "PM2.5",
+            value: currentData.aqi.pollutants.pm2_5,
+            unit: "µg/m³",
+            pct: Math.min((currentData.aqi.pollutants.pm2_5 / 100) * 100, 100),
+            level:
+              currentData.aqi.pollutants.pm2_5 <= 15
+                ? "good"
+                : currentData.aqi.pollutants.pm2_5 <= 35
+                ? "fair"
+                : "moderate",
+          },
+          {
+            name: "PM10",
+            value: currentData.aqi.pollutants.pm10,
+            unit: "µg/m³",
+            pct: Math.min((currentData.aqi.pollutants.pm10 / 180) * 100, 100),
+            level:
+              currentData.aqi.pollutants.pm10 <= 50
+                ? "good"
+                : currentData.aqi.pollutants.pm10 <= 100
+                ? "fair"
+                : "moderate",
+          },
+          {
+            name: "NO₂",
+            value: currentData.aqi.pollutants.no2,
+            unit: "µg/m³",
+            pct: Math.min((currentData.aqi.pollutants.no2 / 100) * 100, 100),
+            level:
+              currentData.aqi.pollutants.no2 <= 25
+                ? "good"
+                : currentData.aqi.pollutants.no2 <= 50
+                ? "fair"
+                : "moderate",
+          },
+          {
+            name: "O₃",
+            value: currentData.aqi.pollutants.o3,
+            unit: "µg/m³",
+            pct: Math.min((currentData.aqi.pollutants.o3 / 100) * 100, 100),
+            level:
+              currentData.aqi.pollutants.o3 <= 30
+                ? "good"
+                : currentData.aqi.pollutants.o3 <= 60
+                ? "fair"
+                : "moderate",
+          },
+          {
+            name: "CO",
+            value: currentData.aqi.pollutants.co,
+            unit: "µg/m³",
+            pct: Math.min((currentData.aqi.pollutants.co / 10) * 100, 100),
+            level:
+              currentData.aqi.pollutants.co <= 2
+                ? "good"
+                : currentData.aqi.pollutants.co <= 6
+                ? "fair"
+                : "moderate",
+          },
+        ];
 
   return (
     <main className={`dashboard ${sevClass}`}>
@@ -376,33 +530,36 @@ export default function Dashboard() {
       </header>
       {/* ── Section 1: Hero ─────────────────────────── */}
       <Hero
-        location={DATA.location}
-        updatedAt={DATA.updatedAt}
-        aqiValue={DATA.aqiValue}
-        aqiLabel={DATA.aqiLabel}
-        exposureScore={DATA.exposureScore}
-        exposureLabel={DATA.riskLevel}
+        location={`${currentData.location.city}, ${currentData.location.state}`}
+        updatedAt={new Date(currentData.aqi.fetchedAt).toLocaleString()}
+        aqiValue={currentData.aqi.aqiValue}
+        aqiLabel={currentData.aqiLabel}
+        exposureScore={currentData.exposureScore}
+        exposureLabel={currentData.exposureLabel}
         onFetch={handleFetch}
       />
 
       {/* ── Section 2: Decision Strip ────────────────── */}
       {/* CHANGE 2: exposureScore removed — now lives in hero */}
       <DecisionStrip
-        riskLevel={DATA.riskLevel}
-        action={DATA.action}
-        actionDetail={DATA.actionDetail}
+        riskLevel={currentData.riskLevel}
+        action={currentData.nextBestAction?.message || "No action available"}
+        actionDetail=""
       />
 
       {/* ── Section 3: Content Grid ──────────────────── */}
       <div className="content-grid">
-        <HealthAdvisory items={DATA.advisory} />
-        <PollutantBreakdown pollutants={DATA.pollutants} />
+        <HealthAdvisory
+          items={currentData.healthAdvisory?.doNext || []}
+        />
+        
+        <PollutantBreakdown pollutants={pollutantData} />
       </div>
 
       {/* ── Section 4: Trend ─────────────────────────── */}
       <TrendPanel
-        values={DATA.trend}
-        labels={DATA.trendHours}
+        values={trendValues.length ? trendValues : [0]}
+        labels={trendLabels.length ? trendLabels : ["Now"]}
         sevClass={sevClass}
       />
 
