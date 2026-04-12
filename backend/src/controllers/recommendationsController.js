@@ -22,8 +22,9 @@ export async function nextBestAction (req, res)
             };
 
         const recommendations = generateRecommendations(ctx);
+        const nextBestAction = recommendations.length > 0 ? recommendations[0] : null;
 
-        return res.status(200).json({success: true, data: {...ctx, recommendations}});
+        return res.status(200).json({success: true, data: {...ctx, nextBestAction, recommendations}});
     } catch (error) {
         console.log(error);
         res.status(500).json({ success: false, message: "Failed to show recommendations" });

@@ -36,5 +36,6 @@ export async function dashboardData (user_id)
                     aqiHistory: aqis});
     } catch (error) {
         console.log(error);
+        return null;
     }
 }

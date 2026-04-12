@@ -1,6 +1,7 @@
 import {getLocationByID} from "../queries/locations.js";
 import { getApi } from "../utils/aqiUtils.js";
 import { addAqiReading } from "../queries/aqi.js";
+import { calcAQINumber } from "../utils/aqiNumberUtils.js";
 
 export async function fetchAqi ( location_id )
 {
@@ -10,6 +11,8 @@ export async function fetchAqi ( location_id )
     if (!aqi) return null;
     const aqi_level = aqi.list[0].main.aqi;
     const pollutants = aqi.list[0].components;
+
+    const aqiCalc = calcAQINumber(pollutants);
     
     const pm25 = pollutants.pm2_5;
     const pm10 = pollutants.pm10;
@@ -21,5 +24,11 @@ export async function fetchAqi ( location_id )
     
     await addAqiReading(location_id, aqi_level, co, no2, o3, so2, pm25, pm10, nh3);
     
-    return { aqi_level, pollutants };
+    return { 
+        aqi_level, 
+        aqiValue: aqiCalc.aqiValue, 
+        dominantPollutant: aqiCalc.dominantPollutant, 
+        pollutants, 
+        fetchedAt: new Date().toISOString()
+    };
 }

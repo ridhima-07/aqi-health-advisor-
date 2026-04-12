@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { fetchAqi } from "../services/aqiServices.js";
-import {addAqiReading, getAqiReadingsByLocationID, getLatestAqiReadingByLocationID} from "../queries/aqi.js";
+import {getAqiReadingsByLocationID, getLatestAqiReadingByLocationID} from "../queries/aqi.js";
 
 export async function fetchAQI (req, res) {
     try {
