@@ -1,5 +1,5 @@
 import {
-    createUser,
+    updateUserProfile,
     updateUser,
     getUsers,
     getUserByID,
@@ -7,19 +7,25 @@ import {
     deleteUserByID
 } from "../queries/users.js";
 
-export async function registerUser(req, res) {
-    try {
-        const {name, dob, email, gender} = req.body;
-        if ( !name || !dob || !email || !gender )
-            return res.status(400).json({success: false, message: "Details incomplete."});
-        const newUser = await createUser(name, dob, email, gender);
-        if (!newUser)
-            return res.status(400).json({ success: false, message: "Failed to create user."});
-        res.status(201).json({ success: true, message: "User created successfully!", data: {id: newUser.insertId}});
+export async function completeUserProfile(req, res) {
+  try {
+    const id = req.params.id;
+    const { dob, gender } = req.body;
+
+    if (!dob || !gender) 
+      return res.status(400).json({ success: false, message: "DOB and gender are required."});
+
+    const updatedUser = await updateUserProfile(id, dob, gender);
+
+    if (updatedUser.affectedRows === 0) 
+      return res.status(404).json({ success: false, message: "User not found." });
+
+    return res.status(200).json({ success: true, message: "User profile completed successfully." });
     } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to create user."});
+        console.log(error);
+        return res.status(500).json({ success: false, message: "Failed to complete user profile." });
     }
-};
+}
 
 export async function updateUserController (req, res)
 {

@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 
 import {
-    registerUser,
+    completeUserProfile,
     updateUserController,
     getAllUsers,
     getUserByIdController,
@@ -10,7 +10,7 @@ import {
     deleteUser,
 } from "../controllers/userController.js";
 
-router.post("/", registerUser);
+router.put("/:id/profile", completeUserProfile);
 router.put("/:id", updateUserController);
 router.get("/", getAllUsers);
 router.get("/email/:email", getUserByEmailController);
