@@ -130,7 +130,7 @@ function ExposureRing({ score, label }) {
 }
 
 // ─── Section 1: Hero ───────────────────────────────────────────────────────
-function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposureLabel, onFetch }) {
+function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposureLabel, cigaretteEquivalent, onFetch }) {
   const thumbLeft = aqiToPercent(aqiValue);
 
   return (
@@ -171,6 +171,11 @@ function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposure
                 role="img"
                 aria-label={`${aqiValue} on scale of 0 to 500`}
               />
+              {cigaretteEquivalent && (
+                <p className="aqi-fact">
+                  ⚠️ Roughly comparable to smoking {cigaretteEquivalent} today
+                </p>
+              )}
             </div>
             <div className="scale-labels">
               <span>Good</span>

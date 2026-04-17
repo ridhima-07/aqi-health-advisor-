@@ -1,0 +1,666 @@
+/* ============================================================
+   AqiInfo.css — AQI IQ | AQI Information Page
+   ============================================================
+   Token reference (matches dashboard):
+     --bg:        #222831
+     --surface:   #252b36
+     --surface-2: #2c3140
+     --text:      #EEEEEE
+     --muted:     #9BA4B5
+     --soft:      #C2CAD6
+     --border:    rgba(255,255,255,0.08)
+   AQI accent colors used ONLY for data indicators:
+     --good:      #3DDC84
+     --fair:      #F5C842
+     --moderate:  #FF8C42
+     --poor:      #FF4C4C
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+
+/* ─── Tokens ─────────────────────────────────────────────── */
+.ai-root {
+  --bg:        #222831;
+  --surface:   #252b36;
+  --surface-2: #2c3140;
+  --surface-3: #1e232e;
+  --text:      #EEEEEE;
+  --soft:      #C2CAD6;
+  --muted:     #9BA4B5;
+  --border:    rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --good:      #3DDC84;
+  --fair:      #F5C842;
+  --moderate:  #FF8C42;
+  --poor:      #FF4C4C;
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─── Layout helpers ─────────────────────────────────────── */
+.ai-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.ai-section {
+  padding: 72px 0;
+}
+
+.ai-section--alt {
+  background: var(--surface-3);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─── Typography ─────────────────────────────────────────── */
+.ai-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.ai-section-heading {
+  font-family: "Inter", sans-serif;
+  font-size: clamp(24px, 2.8vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin: 0 0 16px;
+  line-height: 1.15;
+}
+
+.ai-body-text {
+  font-size: 15px;
+  color: var(--soft);
+  line-height: 1.75;
+  max-width: 680px;
+  margin: 0 0 40px;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   1. HERO
+════════════════════════════════════════════════════════════ */
+.ai-hero {
+  background: var(--bg);
+  padding: 72px 0 0;
+  position: relative;
+}
+
+.ai-hero-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 40px 52px;
+}
+
+.ai-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.ai-hero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--good);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.ai-hero-title {
+  font-family: "Inter", sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: var(--text);
+  margin: 0 0 18px;
+  line-height: 1.05;
+}
+
+.ai-hero-sub {
+  font-size: 16px;
+  color: var(--soft);
+  line-height: 1.75;
+  max-width: 620px;
+  margin: 0;
+}
+
+.ai-hero-rule {
+  height: 1px;
+  background: var(--border);
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   2. WHAT IS AQI — Trio cards
+════════════════════════════════════════════════════════════ */
+.ai-trio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.ai-trio-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s;
+}
+
+.ai-trio-card:hover {
+  border-color: var(--border-strong);
+}
+
+.ai-trio-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ai-trio-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.ai-trio-text {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   3. AQI LEVELS
+════════════════════════════════════════════════════════════ */
+.ai-levels-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-level-row {
+  display: grid;
+  grid-template-columns: 4px 90px 110px 1fr;
+  align-items: center;
+  gap: 20px;
+  background: var(--level-bg, rgba(255,255,255,0.03));
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 12px;
+  padding: 16px 20px 16px 0;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.ai-level-row:hover {
+  border-color: var(--border-strong);
+}
+
+/* Left colored bar */
+.ai-level-bar {
+  width: 4px;
+  height: 100%;
+  min-height: 48px;
+  background: var(--level-color, #ccc);
+  border-radius: 0 2px 2px 0;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.ai-level-range {
+  font-family: "DM Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ai-level-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 100px;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.ai-level-desc {
+  font-size: 13.5px;
+  color: var(--soft);
+  line-height: 1.55;
+  margin: 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   4. POLLUTANTS
+════════════════════════════════════════════════════════════ */
+.ai-pollutants-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+
+.ai-pollutant-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ai-pollutant-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.ai-pollutant-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-pollutant-name {
+  font-family: "DM Mono", monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.ai-pollutant-explanation {
+  font-size: 13px;
+  color: var(--soft);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ai-pollutant-divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.ai-pollutant-impact-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ai-pollutant-impact {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   5. SENSITIVE GROUPS
+════════════════════════════════════════════════════════════ */
+.ai-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.ai-group-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: border-color 0.2s;
+}
+
+.ai-group-card:hover {
+  border-color: var(--border-strong);
+}
+
+.ai-group-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ai-group-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 5px;
+}
+
+.ai-group-note {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   6. DID YOU KNOW
+════════════════════════════════════════════════════════════ */
+.ai-dyk-section {
+  position: relative;
+}
+
+.ai-dyk-header {
+  margin-bottom: 0;
+}
+
+.ai-dyk-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.ai-dyk-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-dyk-stat {
+  font-family: "DM Mono", monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.ai-dyk-context {
+  font-size: 13.5px;
+  color: var(--soft);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.ai-dyk-disclaimer {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   7. HOW AQI IQ HELPS
+════════════════════════════════════════════════════════════ */
+.ai-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ai-compare-card {
+  border-radius: 18px;
+  padding: 28px 26px;
+  border: 1px solid var(--border);
+}
+
+.ai-compare-card--generic {
+  background: var(--surface-3);
+}
+
+.ai-compare-card--aqiiq {
+  background: rgba(61, 220, 132, 0.04);
+  border-color: rgba(61, 220, 132, 0.2);
+}
+
+.ai-compare-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ai-compare-label--branded {
+  color: var(--good);
+}
+
+.ai-compare-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--good);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.ai-compare-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-compare-list li {
+  font-size: 14px;
+  color: var(--muted);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.ai-compare-list li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: rgba(255,255,255,0.2);
+}
+
+.ai-compare-list--branded li {
+  color: var(--soft);
+}
+
+.ai-compare-list--branded li::before {
+  content: "✓";
+  color: var(--good);
+  font-weight: 700;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   8. CHECK AQI ANYWHERE
+════════════════════════════════════════════════════════════ */
+.ai-cta-section {
+  padding: 80px 0;
+}
+
+.ai-cta-inner {
+  max-width: 560px;
+}
+
+.ai-cta-body {
+  margin-bottom: 28px;
+}
+
+.ai-cta-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ai-cta-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  padding: 12px 16px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+  outline: none;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.ai-cta-input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.ai-cta-btn {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 11px;
+  cursor: not-allowed;
+  opacity: 0.38;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ai-cta-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  opacity: 0.7;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .ai-container {
+    padding: 0 24px;
+  }
+
+  .ai-trio-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-pollutants-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ai-groups-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ai-dyk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-compare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-level-row {
+    grid-template-columns: 4px 80px 100px 1fr;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ai-section {
+    padding: 52px 0;
+  }
+
+  .ai-hero {
+    padding: 52px 0 0;
+  }
+
+  .ai-container {
+    padding: 0 16px;
+  }
+
+  .ai-pollutants-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-groups-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-level-row {
+    grid-template-columns: 4px 1fr;
+    grid-template-rows: auto auto;
+    gap: 8px 12px;
+    padding: 14px 14px 14px 0;
+  }
+
+  .ai-level-bar {
+    grid-row: 1 / 3;
+  }
+
+  .ai-level-range {
+    font-size: 12px;
+  }
+
+  .ai-level-badge {
+    justify-self: start;
+  }
+
+  .ai-level-desc {
+    grid-column: 2;
+    font-size: 13px;
+  }
+
+  .ai-cta-search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ai-cta-btn {
+    text-align: center;
+  }
+}

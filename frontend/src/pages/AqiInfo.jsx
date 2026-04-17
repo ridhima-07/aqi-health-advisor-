@@ -1,8 +1,417 @@
-export default function AQIInfo() {
+// ============================================================
+// AqiInfo.jsx — AQI IQ | AQI Information Page
+//
+// Sections:
+//   1. Hero
+//   2. What is AQI
+//   3. AQI Levels
+//   4. Main Pollutants
+//   5. Who Should Be Careful
+//   6. Real-World Impact (Did You Know)
+//   7. How AQI IQ Helps
+//   8. Check AQI Anywhere (placeholder UI)
+// ============================================================
+
+import "../styles/AqiInfo.css";
+
+// ─────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────
+
+const AQI_LEVELS = [
+  {
+    range: "0 – 50",
+    label: "Good",
+    color: "#3DDC84",
+    bg: "rgba(61,220,132,0.08)",
+    description: "Air quality is satisfactory. Little or no risk for the general population.",
+  },
+  {
+    range: "51 – 100",
+    label: "Fair",
+    color: "#F5C842",
+    bg: "rgba(245,200,66,0.08)",
+    description: "Acceptable air quality. Sensitive individuals may experience minor effects.",
+  },
+  {
+    range: "101 – 150",
+    label: "Moderate",
+    color: "#FF8C42",
+    bg: "rgba(255,140,66,0.08)",
+    description: "Unhealthy for sensitive groups. General public is not significantly affected.",
+  },
+  {
+    range: "151 – 200",
+    label: "Poor",
+    color: "#FF4C4C",
+    bg: "rgba(255,76,76,0.08)",
+    description: "Everyone may begin to experience health effects. Sensitive groups at higher risk.",
+  },
+  {
+    range: "201 – 300",
+    label: "Very Poor",
+    color: "#c084fc",
+    bg: "rgba(192,132,252,0.08)",
+    description: "Health alert: everyone may experience more serious health effects.",
+  },
+  {
+    range: "301+",
+    label: "Hazardous",
+    color: "#7c3aed",
+    bg: "rgba(124,58,237,0.08)",
+    description: "Emergency conditions. Entire population is likely to be affected.",
+  },
+];
+
+const POLLUTANTS = [
+  {
+    id: "PM2.5",
+    name: "PM2.5",
+    formula: null,
+    explanation: "Fine particulate matter smaller than 2.5 microns — invisible to the naked eye.",
+    impact: "Penetrates deep into lungs and bloodstream; linked to cardiovascular and respiratory disease.",
+  },
+  {
+    id: "PM10",
+    name: "PM10",
+    formula: null,
+    explanation: "Coarse particles up to 10 microns from dust, pollen, and construction.",
+    impact: "Irritates the upper respiratory tract; worsens asthma and allergies.",
+  },
+  {
+    id: "NO2",
+    name: "NO₂",
+    formula: true,
+    explanation: "Nitrogen dioxide produced mainly by vehicle exhaust and industrial combustion.",
+    impact: "Inflames airways; increases susceptibility to respiratory infections.",
+  },
+  {
+    id: "O3",
+    name: "O₃",
+    formula: true,
+    explanation: "Ground-level ozone formed when sunlight reacts with pollutants — not the protective stratospheric layer.",
+    impact: "Triggers chest pain, coughing, and aggravates asthma.",
+  },
+  {
+    id: "CO",
+    name: "CO",
+    formula: true,
+    explanation: "Carbon monoxide from incomplete combustion of fuels — odourless and colourless.",
+    impact: "Reduces blood's oxygen-carrying capacity; dangerous at high concentrations.",
+  },
+  {
+    id: "SO2",
+    name: "SO₂",
+    formula: true,
+    explanation: "Sulfur dioxide is produced mainly by burning fossil fuels such as coal and oil in power plants and industries.",
+    impact: "Can irritate the nose, throat, and lungs, especially in people with asthma or other respiratory conditions.",
+    },
+];
+
+const SENSITIVE_GROUPS = [
+  { icon: "🫁", label: "Asthma & COPD", note: "Airway inflammation is worsened by elevated PM2.5 and ozone." },
+  { icon: "🚬", label: "Smokers", note: "Combined exposure compounds long-term lung damage significantly." },
+  { icon: "❤️", label: "Heart Conditions", note: "Fine particles can trigger cardiac events in at-risk individuals." },
+  { icon: "👶", label: "Children", note: "Developing lungs are more vulnerable; effects may be permanent." },
+  { icon: "🧓", label: "Elderly", note: "Reduced immune response makes pollution exposure harder to tolerate." },
+];
+
+const DID_YOU_KNOW = [
+  {
+    stat: "≈ 1–3 cigarettes",
+    context: "A full day in a city with AQI 150+ can expose your lungs to particulate levels roughly comparable to smoking a few cigarettes.",
+  },
+  {
+    stat: "2× higher risk",
+    context: "Long-term exposure to elevated PM2.5 is associated with approximately double the risk of certain respiratory diseases.",
+  },
+  {
+    stat: "~7 million",
+    context: "The WHO estimates around 7 million premature deaths annually are linked to ambient and household air pollution.",
+  },
+];
+
+
+// ─────────────────────────────────────────────────────────────
+// COMPONENTS
+// ─────────────────────────────────────────────────────────────
+
+function SectionLabel({ children }) {
+  return <p className="ai-section-label">{children}</p>;
+}
+
+function SectionHeading({ children }) {
+  return <h2 className="ai-section-heading">{children}</h2>;
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// MAIN PAGE
+// ─────────────────────────────────────────────────────────────
+
+export default function AqiInfo() {
   return (
-    <main style={{ padding: "32px", color: "#EEEEEE", background: "#222831", minHeight: "100vh" }}>
-      <h1>AQI Info</h1>
-      <p>This page will explain AQI and let users check AQI by location.</p>
-    </main>
+    <div className="ai-root">
+
+      {/* ══════════════════════════════════════════════════
+          1. HERO
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-hero">
+        <div className="ai-hero-inner">
+          <div className="ai-hero-tag">
+            <span className="ai-hero-dot" />
+            AQI IQ — Knowledge Base
+          </div>
+          <h1 className="ai-hero-title">AQI Info</h1>
+          <p className="ai-hero-sub">
+            The Air Quality Index is a standardised scale that translates complex
+            pollutant data into a single number — so you can make informed decisions
+            about when and how to protect your health.
+          </p>
+        </div>
+        {/* Subtle decorative rule */}
+        <div className="ai-hero-rule" />
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════
+          2. WHAT IS AQI
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section">
+        <div className="ai-container">
+          <SectionLabel>Basics</SectionLabel>
+          <SectionHeading>What is AQI?</SectionHeading>
+          <p className="ai-body-text">
+            AQI stands for Air Quality Index — a numerical scale used by governments
+            and environmental agencies to communicate how polluted the air is at a given
+            time. Higher values mean more pollution and greater potential health risk.
+          </p>
+
+          <div className="ai-trio-grid">
+            <div className="ai-trio-card">
+              <span className="ai-trio-icon">📡</span>
+              <h3 className="ai-trio-title">What it measures</h3>
+              <p className="ai-trio-text">
+                Concentrations of key pollutants including fine particles (PM2.5), coarse
+                particles (PM10), ozone, nitrogen dioxide, and carbon monoxide.
+              </p>
+            </div>
+            <div className="ai-trio-card">
+              <span className="ai-trio-icon">⚠️</span>
+              <h3 className="ai-trio-title">Why it matters</h3>
+              <p className="ai-trio-text">
+                Even short-term exposure to elevated AQI can trigger respiratory symptoms.
+                Chronic exposure carries long-term health consequences.
+              </p>
+            </div>
+            <div className="ai-trio-card">
+              <span className="ai-trio-icon">👥</span>
+              <h3 className="ai-trio-title">Who it affects</h3>
+              <p className="ai-trio-text">
+                Everyone — but particularly those with pre-existing conditions, the very
+                young, and the elderly face the highest risk.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════
+          3. AQI LEVELS
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section ai-section--alt">
+        <div className="ai-container">
+          <SectionLabel>Scale</SectionLabel>
+          <SectionHeading>AQI Levels</SectionHeading>
+          <p className="ai-body-text">
+            Each AQI range corresponds to a health category and a recommended level of
+            caution. Knowing where today's reading falls helps you decide what's safe.
+          </p>
+
+          <div className="ai-levels-list">
+            {AQI_LEVELS.map((level) => (
+              <div
+                key={level.label}
+                className="ai-level-row"
+                style={{ "--level-color": level.color, "--level-bg": level.bg }}
+              >
+                <div className="ai-level-bar" />
+                <div className="ai-level-range">{level.range}</div>
+                <div
+                  className="ai-level-badge"
+                  style={{ color: level.color, background: level.bg }}
+                >
+                  {level.label}
+                </div>
+                <p className="ai-level-desc">{level.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════
+          4. MAIN POLLUTANTS
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section">
+        <div className="ai-container">
+          <SectionLabel>Pollutants</SectionLabel>
+          <SectionHeading>What's in the Air</SectionHeading>
+          <p className="ai-body-text">
+            AQI is calculated from measurements of several distinct pollutants — each with
+            its own sources and health implications.
+          </p>
+
+          <div className="ai-pollutants-grid">
+            {POLLUTANTS.map((p) => (
+              <div key={p.id} className="ai-pollutant-card">
+                <div className="ai-pollutant-header">
+                  <span className="ai-pollutant-name">{p.name}</span>
+                </div>
+                <p className="ai-pollutant-explanation">{p.explanation}</p>
+                <div className="ai-pollutant-divider" />
+                <div className="ai-pollutant-impact-label">Health impact</div>
+                <p className="ai-pollutant-impact">{p.impact}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════
+          5. WHO SHOULD BE CAREFUL
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section ai-section--alt">
+        <div className="ai-container">
+          <SectionLabel>Sensitive Groups</SectionLabel>
+          <SectionHeading>Who Should Be Careful</SectionHeading>
+          <p className="ai-body-text">
+            Air quality affects everyone, but certain groups are significantly more
+            vulnerable to even moderate pollution levels.
+          </p>
+
+          <div className="ai-groups-grid">
+            {SENSITIVE_GROUPS.map((g) => (
+              <div key={g.label} className="ai-group-card">
+                <span className="ai-group-icon">{g.icon}</span>
+                <div>
+                  <h4 className="ai-group-label">{g.label}</h4>
+                  <p className="ai-group-note">{g.note}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════
+          6. REAL-WORLD IMPACT — DID YOU KNOW
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section ai-dyk-section">
+        <div className="ai-container">
+          <div className="ai-dyk-header">
+            <SectionLabel>Real-World Impact</SectionLabel>
+            <SectionHeading>Did You Know?</SectionHeading>
+            <p className="ai-body-text">
+              Abstract numbers become real when put in perspective. These approximate
+              comparisons illustrate why air quality monitoring matters.
+            </p>
+          </div>
+
+          <div className="ai-dyk-grid">
+            {DID_YOU_KNOW.map((item, i) => (
+              <div key={i} className="ai-dyk-card">
+                <div className="ai-dyk-stat">{item.stat}</div>
+                <p className="ai-dyk-context">{item.context}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="ai-dyk-disclaimer">
+            ⓘ These are approximate comparisons based on pollution exposure research and
+            should not be taken as precise medical equivalencies.
+          </p>
+        </div>
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════
+          7. HOW AQI IQ HELPS
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section">
+        <div className="ai-container">
+          <SectionLabel>Our Approach</SectionLabel>
+          <SectionHeading>How AQI IQ Is Different</SectionHeading>
+          <p className="ai-body-text">
+            Most AQI tools show you a number. AQI IQ shows you what that number means
+            for you specifically — based on your health profile and location.
+          </p>
+
+          <div className="ai-compare-grid">
+            <div className="ai-compare-card ai-compare-card--generic">
+              <div className="ai-compare-label">Typical AQI Apps</div>
+              <ul className="ai-compare-list">
+                <li>Generic AQI reading for a city</li>
+                <li>Same data for every user</li>
+                <li>No health context</li>
+                <li>No personalised recommendations</li>
+                <li>Raw numbers only</li>
+              </ul>
+            </div>
+
+            <div className="ai-compare-card ai-compare-card--aqiiq">
+              <div className="ai-compare-label ai-compare-label--branded">
+                <span className="ai-compare-dot" /> AQI IQ
+              </div>
+              <ul className="ai-compare-list ai-compare-list--branded">
+                <li>Personalised exposure score</li>
+                <li>Health profile–aware risk assessment</li>
+                <li>Condition-specific recommendations</li>
+                <li>Daily advisory tailored to you</li>
+                <li>Location-accurate live data</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════
+          8. CHECK AQI ANYWHERE (placeholder)
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section ai-section--alt ai-cta-section">
+        <div className="ai-container">
+          <div className="ai-cta-inner">
+            <SectionLabel>Coming Soon</SectionLabel>
+            <h2 className="ai-section-heading">Check AQI Anywhere</h2>
+            <p className="ai-body-text ai-cta-body">
+              Search any city to view its current air quality and pollutant levels.
+              Full city search is coming soon.
+            </p>
+
+            <div className="ai-cta-search">
+              <input
+                className="ai-cta-input"
+                type="text"
+                placeholder="e.g. Mumbai, Delhi, Bangalore…"
+                disabled
+              />
+              <button className="ai-cta-btn" disabled>
+                Search
+              </button>
+            </div>
+
+            <p className="ai-cta-note">
+              This feature is not yet available. Stay tuned for updates.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </div>
   );
 }
