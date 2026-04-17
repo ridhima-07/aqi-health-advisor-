@@ -1,6 +1,6 @@
 import api from "./api";
 
-export const createUser = async (payload) => {
-  const res = await api.post("/users", payload);
+export async function updateUserProfile(userId, payload) {
+  const res = await api.put(`/users/${userId}/profile`, payload);
   return res.data;
-};
+}

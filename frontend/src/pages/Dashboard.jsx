@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getDashboardData, fetchLatestAqi } from "../services/dashboardServices";
+import { getDashboardData, fetchLatestAqi } from "../services/dashboardService";
 import "../styles/Dashboard.css";
 
 // ─── Placeholder Data ──────────────────────────────────────────────────────
@@ -363,7 +363,7 @@ function TrendPanel({ values, labels, sevClass }) {
 }
 
 // ─── Dashboard (root export) ───────────────────────────────────────────────
-export default function Dashboard() {
+export default function Dashboard({userId, onLogout}) {
   // const sevClass = severityClass(DATA.aqiValue);
 
   const [dashboardData, setDashboardData] = useState(null);
@@ -376,9 +376,6 @@ export default function Dashboard() {
       setLoading(true);
       setError("");
 
-      // temporary hardcoded user id for now
-      const userId = 1;
-
       const result = await getDashboardData(userId);
       setDashboardData(result.data);
     } catch (err) {
@@ -389,8 +386,10 @@ export default function Dashboard() {
     }
   }
 
-  loadDashboard();
-}, []);
+  if (userId) {
+    loadDashboard();
+  }
+}, [userId]);
 
   async function handleFetch() {
   try {
@@ -525,6 +524,7 @@ export default function Dashboard() {
 
   return (
     <main className={`dashboard ${sevClass}`}>
+      <Navbar userId={userId} onLogout={onLogout} />
       <header className="dashboard-page-header">
         <h1 className="dashboard-page-title">DASHBOARD</h1>
       </header>

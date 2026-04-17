@@ -1,18 +1,63 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import AqiInfo from "./pages/AqiInfo";
+import Recommendations from "./pages/Recommendations";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(() => localStorage.getItem("userId") || null);
+
+  useEffect(() => {
+    if (userId) {
+      localStorage.setItem("userId", userId);
+    } else {
+      localStorage.removeItem("userId");
+    }
+  }, [userId]);
 
   return (
-    <>
-      {isLoggedIn ? (
-        <Dashboard />
-      ) : (
-        <Home onComplete={() => setIsLoggedIn(true)} />
-      )}
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Home
+              userId={userId}
+              onComplete={(id) => setUserId(id)}
+              onLoginSuccess={(id) => setUserId(id)}
+            />
+          }
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            userId ? (
+              <Dashboard userId={userId} onLogout={() => setUserId(null)} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/aqi-info"
+          element={<AqiInfo />}
+        />
+
+        <Route
+          path="/recommendations"
+          element={
+            userId ? (
+              <Recommendations userId={userId} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

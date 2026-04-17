@@ -1,12 +1,12 @@
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 
-export default function Home({ onComplete }) {
+export default function Home({ userId, onComplete, onLoginSuccess }) {
   return (
     <div className="theme-dark">
-      <Navbar />
+      <Navbar userId={userId}/>
       <main>
-        <Hero onComplete={onComplete}/>
+        <Hero onComplete={onComplete} onLoginSuccess={onLoginSuccess} />
       </main>
     </div>
   );

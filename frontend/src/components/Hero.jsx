@@ -1,15 +1,19 @@
 // ============================================================
-// Hero.jsx — AQI IQ | Hero + Setup Journey
+// Hero.jsx — AQI IQ | Hero + Auth + Setup Journey
 //
-// Contains TWO sections:
-//   1. HeroSection  — headline, AQI preview card, scroll indicator
-//   2. SetupJourney — vertical step tracker (left) + form panel (right)
+// UPDATED FLOW:
+//   Auth section added to homepage (Sign Up / Login toggle)
+//   Sign Up: name, email, password → backend creates user → returns userId
+//   Login: email, password → backend verifies → returns userId → dashboard
+//   Setup Step 1: profile (dob, gender) — updates EXISTING user via userId
+//   Setup Step 2: health profile
+//   Setup Step 3: location setup
 //
 // All styling lives in Hero.css.
-// Placeholder data is clearly marked → replace with API data later.
 // ============================================================
 
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -17,15 +21,16 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import "../styles/Hero.css";
-import { createUser } from "../services/userService";
+
+// Import updated services — signup/login are NEW; others remain
+import { signup, login } from "../services/authService";
+import { updateUserProfile } from "../services/userService";
 import { createHealthProfile } from "../services/healthService";
 import { createLocation } from "../services/locationService";
 
 // ─────────────────────────────────────────────────────────────
 // PLACEHOLDER DATA  →  replace with backend API response later
 // ─────────────────────────────────────────────────────────────
-
-// → backend: current AQI data for the user's location
 const AQI_CARD_DATA = {
   location:       "Mumbai, India",
   aqi:            156,
@@ -35,13 +40,13 @@ const AQI_CARD_DATA = {
   recommendation: "Avoid outdoor activity. Wear an N95 mask if going out.",
 };
 
-// Step definitions — copy only, no backend needed
+// Setup steps (auth is handled separately before this flow)
 const STEPS = [
   {
     id:    1,
     icon: "1",
-    title: "Create Profile",
-    hint:  "Basic details to set up your account",
+    title: "Complete Profile",
+    hint:  "Add your date of birth and gender",
   },
   {
     id:    2,
@@ -55,33 +60,26 @@ const STEPS = [
     title: "Location Setup",
     hint:  "We fetch live AQI for your area",
   },
-  {
-    id:    4,
-    icon: "4",
-    title: "Dashboard Ready",
-    hint:  "Your personalized view awaits",
-  },
 ];
 
-// Health condition checkboxes — static list
 const HEALTH_CONDITIONS = [
-  { key: "isSmoker", label: "Smoker" },
+  { key: "isSmoker",          label: "Smoker" },
   { key: "hasHeartCondition", label: "Heart Condition" },
-  { key: "hasAsthma", label: "Asthma" },
-  { key: "hasCOPD", label: "COPD" },
-  { key: "hasAllergy", label: "Allergies" },
+  { key: "hasAsthma",         label: "Asthma" },
+  { key: "hasCOPD",           label: "COPD" },
+  { key: "hasAllergy",        label: "Allergies" },
 ];
 
 
 // ─────────────────────────────────────────────────────────────
-// HELPER: returns color for a given AQI value
+// HELPERS
 // ─────────────────────────────────────────────────────────────
 function getAQIColor(aqi) {
-  if (aqi <= 50)  return "#22c55e";   // Good
-  if (aqi <= 100) return "#eab308";   // Fair
-  if (aqi <= 150) return "#f97316";   // Moderate
-  if (aqi <= 200) return "#ef4444";   // Poor
-  return "#a855f7";                   // Hazardous
+  if (aqi <= 50)  return "#22c55e";
+  if (aqi <= 100) return "#eab308";
+  if (aqi <= 150) return "#f97316";
+  if (aqi <= 200) return "#ef4444";
+  return "#a855f7";
 }
 
 function getExposureColor(score) {
@@ -90,9 +88,23 @@ function getExposureColor(score) {
   return "#ef4444";
 }
 
+// Shared MUI TextField style overrides
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "10px",
+    background: "#2a2f38",
+    color: "#EEEEEE",
+    "& fieldset": { borderColor: "#444c5c" },
+    "&:hover fieldset": { borderColor: "#9BA4B5" },
+    "&.Mui-focused fieldset": { borderColor: "#ef4444" },
+  },
+  "& .MuiInputLabel-root": { color: "#9BA4B5" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "#ef4444" },
+};
+
 
 // ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: AQI Preview Card (hero right side)
+// SUB-COMPONENT: AQI Preview Card
 // ─────────────────────────────────────────────────────────────
 function AQICard({ data }) {
   const aqiColor = getAQIColor(data.aqi);
@@ -100,11 +112,8 @@ function AQICard({ data }) {
 
   return (
     <Box className="aqi-card" style={{ "--glow-color": aqiColor }}>
-
-      {/* Radial glow based on AQI severity */}
       <Box className="aqi-card-glow" />
 
-      {/* ── Top row: location + live badge ── */}
       <Box className="aqi-card-toprow">
         <Typography className="aqi-card-location">📍 {data.location}</Typography>
         <Box className="live-badge">
@@ -113,7 +122,6 @@ function AQICard({ data }) {
         </Box>
       </Box>
 
-      {/* ── Big AQI number ── */}
       <Box className="aqi-number-block">
         <Typography className="aqi-number" style={{ color: aqiColor }}>
           {data.aqi}
@@ -123,10 +131,8 @@ function AQICard({ data }) {
         </Box>
       </Box>
 
-      {/* ── Divider ── */}
       <Box className="aqi-card-divider" />
 
-      {/* ── Exposure row ── */}
       <Box className="exposure-row">
         <Box>
           <Typography className="exp-eyebrow">Exposure Score</Typography>
@@ -135,8 +141,6 @@ function AQICard({ data }) {
             <span className="exp-denom">/100</span>
           </Typography>
         </Box>
-
-        {/* Circular gauge */}
         <Box className="exp-gauge-wrap">
           <svg viewBox="0 0 72 72" className="exp-gauge-svg">
             <circle cx="36" cy="36" r="30" fill="none" stroke="#393E46" strokeWidth="6" />
@@ -156,13 +160,11 @@ function AQICard({ data }) {
         </Box>
       </Box>
 
-      {/* ── Recommendation ── */}
       <Box className="aqi-rec-box">
         <Typography className="aqi-rec-label">💡 Advisory</Typography>
         <Typography className="aqi-rec-text">{data.recommendation}</Typography>
       </Box>
 
-      {/* ── AQI scale bar ── */}
       <Box className="aqi-scale-row">
         {[
           { label: "Good",   color: "#22c55e" },
@@ -194,13 +196,182 @@ function AQICard({ data }) {
 
 
 // ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: Scroll Indicator (bottom of hero)
+// SUB-COMPONENT: Scroll Indicator
 // ─────────────────────────────────────────────────────────────
 function ScrollIndicator() {
   return (
     <Box className="scroll-indicator">
-      <Typography className="scroll-text">Scroll to set up your profile</Typography>
+      <Typography className="scroll-text">Scroll to get started</Typography>
       <Box className="scroll-arrow">↓</Box>
+    </Box>
+  );
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// SUB-COMPONENT: Auth Section (NEW)
+// Renders a Sign Up / Login toggle and corresponding form.
+// Props:
+//   onSignupSuccess(userId) — called after successful signup
+//   onLoginSuccess(userId)  — called after successful login
+// ─────────────────────────────────────────────────────────────
+function AuthSection({ onSignupSuccess, onLoginSuccess }) {
+  // "signup" | "login"
+  const [authMode, setAuthMode] = useState("signup");
+
+  const [authData, setAuthData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+
+  function handleChange(field, value) {
+    setAuthData((prev) => ({ ...prev, [field]: value }));
+  }
+
+  // Switch between signup and login — clear errors on switch
+  function switchMode(mode) {
+    setAuthMode(mode);
+    setError("");
+  }
+
+  async function handleSubmit() {
+    setError("");
+    setLoading(true);
+
+    try {
+      if (authMode === "signup") {
+        // POST /auth/signup — name, email, password
+        const res = await signup({
+          name:     authData.name,
+          email:    authData.email,
+          password: authData.password,
+        });
+
+        // Backend returns user id after creating account
+        const userId = res?.id || res?.user_id || res?.data?.id;
+        if (!userId) throw new Error("Signup succeeded but no user ID was returned.");
+
+        onSignupSuccess(userId);
+
+      } else {
+        // POST /auth/login — email, password
+        const res = await login({
+          email:    authData.email,
+          password: authData.password,
+        });
+
+        // Backend returns user id after verification
+        const userId = res?.id || res?.user_id || res?.data?.id;
+        if (!userId) throw new Error("Login succeeded but no user ID was returned.");
+
+        onLoginSuccess(userId);
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Box className="auth-section" id="auth">
+      <Box className="auth-section-header">
+        <Typography className="setup-eyebrow">Get Started</Typography>
+        <Typography className="setup-heading">
+          {authMode === "signup" ? "Create your account" : "Welcome back"}
+        </Typography>
+        <Typography className="setup-subheading">
+          {authMode === "signup"
+            ? "Sign up to get your personalized AQI exposure profile."
+            : "Log in to view your personalized dashboard."}
+        </Typography>
+      </Box>
+
+      <Box className="auth-panel">
+        {/* ── Mode toggle (Sign Up / Login) ── */}
+        <Box className="auth-toggle">
+          <button
+            className={`auth-toggle-btn ${authMode === "signup" ? "auth-toggle-btn--active" : ""}`}
+            onClick={() => switchMode("signup")}
+          >
+            Sign Up
+          </button>
+          <button
+            className={`auth-toggle-btn ${authMode === "login" ? "auth-toggle-btn--active" : ""}`}
+            onClick={() => switchMode("login")}
+          >
+            Log In
+          </button>
+        </Box>
+
+        {/* ── Fields ── */}
+        <Box className="form-fields">
+          {/* Name only shown on signup */}
+          {authMode === "signup" && (
+            <TextField
+              label="Full Name"
+              variant="outlined"
+              fullWidth
+              value={authData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              sx={inputSx}
+            />
+          )}
+
+          <TextField
+            label="Email Address"
+            variant="outlined"
+            fullWidth
+            value={authData.email}
+            onChange={(e) => handleChange("email", e.target.value)}
+            sx={inputSx}
+          />
+
+          <TextField
+            label="Password"
+            type="password"
+            variant="outlined"
+            fullWidth
+            value={authData.password}
+            onChange={(e) => handleChange("password", e.target.value)}
+            sx={inputSx}
+          />
+        </Box>
+
+        {/* ── Error message ── */}
+        {error && (
+          <Typography className="auth-error">{error}</Typography>
+        )}
+
+        {/* ── Submit ── */}
+        <Button
+          className="btn-primary auth-submit-btn"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading
+            ? (authMode === "signup" ? "Creating account..." : "Logging in...")
+            : (authMode === "signup" ? "Create Account →" : "Log In →")}
+        </Button>
+
+        {/* ── Switch prompt ── */}
+        <Typography className="auth-switch-text">
+          {authMode === "signup"
+            ? "Already have an account?"
+            : "Don't have an account?"}{" "}
+          <span
+            className="auth-switch-link"
+            onClick={() => switchMode(authMode === "signup" ? "login" : "signup")}
+          >
+            {authMode === "signup" ? "Log in" : "Sign up"}
+          </span>
+        </Typography>
+      </Box>
     </Box>
   );
 }
@@ -212,19 +383,15 @@ function ScrollIndicator() {
 function StepTracker({ activeStep, completedSteps, onStepClick }) {
   return (
     <Box className="step-tracker">
-
-      {/* Assistant guide text */}
       <Box className="assistant-bubble">
         <span className="assistant-icon">🤖</span>
         <Typography className="assistant-text">
-          {activeStep === 0 && "Let's set up your profile for personalized insights."}
+          {activeStep === 0 && "Almost there! Complete your profile to personalise your AQI insights."}
           {activeStep === 1 && "Add your health details so we can assess your risk accurately."}
           {activeStep === 2 && "Tell us where you are — we'll pull live AQI for your location."}
-          {activeStep === 3 && "You're all set! Your dashboard is ready."}
         </Typography>
       </Box>
 
-      {/* Step list */}
       <Box className="steps-list">
         {STEPS.map((step, index) => {
           const isActive    = index === activeStep;
@@ -236,12 +403,9 @@ function StepTracker({ activeStep, completedSteps, onStepClick }) {
               className={`step-item ${isActive ? "step-item--active" : ""} ${isCompleted ? "step-item--done" : ""}`}
               onClick={() => onStepClick(index)}
             >
-              {/* Vertical connector line (not shown on last item) */}
               {index < STEPS.length - 1 && (
                 <Box className={`step-line ${isCompleted ? "step-line--done" : ""}`} />
               )}
-
-              {/* Icon circle */}
               <Box className="step-circle">
                 {isCompleted ? (
                   <span className="step-check">✔</span>
@@ -249,8 +413,6 @@ function StepTracker({ activeStep, completedSteps, onStepClick }) {
                   <span className="step-icon">{step.icon}</span>
                 )}
               </Box>
-
-              {/* Text */}
               <Box className="step-text-block">
                 <Typography className="step-title">{step.title}</Typography>
                 <Typography className="step-hint">{step.hint}</Typography>
@@ -266,83 +428,48 @@ function StepTracker({ activeStep, completedSteps, onStepClick }) {
 
 // ─────────────────────────────────────────────────────────────
 // SUB-COMPONENT: Form Panel (right panel of Setup Journey)
-// One step shown at a time. Accepts formData + setter as props
-// so the parent (Hero) owns all state — easy to send to backend.
+// UPDATED: Step 0 is now profile completion (dob + gender only).
+//          User already exists — we update, not create.
 // ─────────────────────────────────────────────────────────────
 function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading, error }) {
 
-  // Helper: update a single field inside formData
   function handleChange(field, value) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }
 
-  // Helper: toggle a health condition boolean field
-  // → backend: send formData booleans directly to API
   function toggleCondition(field) {
-    setFormData((prev) => ({
-        ...prev,
-        [field]: !prev[field],
-    }));
-    }
-
-  // Shared MUI TextField style overrides
-  const inputSx = {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "10px",
-      background: "#2a2f38",
-      color: "#EEEEEE",
-      "& fieldset": { borderColor: "#444c5c" },
-      "&:hover fieldset": { borderColor: "#9BA4B5" },
-      "&.Mui-focused fieldset": { borderColor: "#ef4444" },
-    },
-    "& .MuiInputLabel-root": { color: "#9BA4B5" },
-    "& .MuiInputLabel-root.Mui-focused": { color: "#ef4444" },
-  };
+    setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
+  }
 
   return (
     <Box className="form-panel">
 
-      {/* ── Step 1: Create Profile ── */}
+      {/* ── Step 1: Complete Profile (dob + gender only) ── */}
+      {/* NOTE: User account already created via signup.    */}
+      {/* This step UPDATES the existing user profile.      */}
       {activeStep === 0 && (
         <Box className="form-step">
-          <Typography className="form-step-title">Create your profile</Typography>
+          <Typography className="form-step-title">Complete your profile</Typography>
           <Typography className="form-step-sub">
-            Start with your basic details so we can create your profile.
+            Add a few more details to personalise your exposure score.
           </Typography>
           <Box className="form-fields">
             <TextField
-              label="Full Name"
-              variant="outlined"
+              label="Date of Birth"
+              type="date"
               fullWidth
-              value={formData.name}
-              onChange={(e) => handleChange("name", e.target.value)}
+              value={formData.dob}
+              onChange={(e) => handleChange("dob", e.target.value)}
+              InputLabelProps={{ shrink: true }}
               sx={inputSx}
             />
             <TextField
-              label="Email Address"
+              label="Gender"
               variant="outlined"
               fullWidth
-              value={formData.email}
-              onChange={(e) => handleChange("email", e.target.value)}
+              value={formData.gender}
+              onChange={(e) => handleChange("gender", e.target.value)}
               sx={inputSx}
-            />
-            <TextField
-                label="Date of Birth"
-                type="date"
-                fullWidth
-                value={formData.dob}
-                onChange={(e) => handleChange("dob", e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                sx={inputSx}
-            />
-
-            <TextField
-                label="Gender"
-                variant="outlined"
-                fullWidth
-                value={formData.gender}
-                onChange={(e) => handleChange("gender", e.target.value)}
-                sx={inputSx}
             />
           </Box>
         </Box>
@@ -355,26 +482,25 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
           <Typography className="form-step-sub">
             Select any conditions that apply. This personalizes your exposure score.
           </Typography>
-          {/* → backend: send health booleans directly */}
-            <Box className="form-checkboxes">
-                {HEALTH_CONDITIONS.map((cond) => (
-                    <FormControlLabel
-                    key={cond.key}
-                    label={<Typography className="checkbox-label">{cond.label}</Typography>}
-                    control={
-                        <Checkbox
-                        checked={formData[cond.key]}
-                        onChange={() => toggleCondition(cond.key)}
-                        sx={{
-                            color: "#555e6e",
-                            "&.Mui-checked": { color: "#ef4444" },
-                        }}
-                        />
-                    }
-                    className={`checkbox-row ${formData[cond.key] ? "checkbox-row--checked" : ""}`}
-                    />
-                ))}
-            </Box>
+          <Box className="form-checkboxes">
+            {HEALTH_CONDITIONS.map((cond) => (
+              <FormControlLabel
+                key={cond.key}
+                label={<Typography className="checkbox-label">{cond.label}</Typography>}
+                control={
+                  <Checkbox
+                    checked={formData[cond.key]}
+                    onChange={() => toggleCondition(cond.key)}
+                    sx={{
+                      color: "#555e6e",
+                      "&.Mui-checked": { color: "#ef4444" },
+                    }}
+                  />
+                }
+                className={`checkbox-row ${formData[cond.key] ? "checkbox-row--checked" : ""}`}
+              />
+            ))}
+          </Box>
         </Box>
       )}
 
@@ -385,77 +511,60 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
           <Typography className="form-step-sub">
             Enter your city or coordinates. We'll fetch live AQI for your exact area.
           </Typography>
-          {/* → backend: send formData.city / lat / lon */}
           <Box className="form-fields">
             <TextField
-                label="City"
-                fullWidth
-                value={formData.city}
-                onChange={(e) => handleChange("city", e.target.value)}
-                sx={inputSx}
+              label="City"
+              fullWidth
+              value={formData.city}
+              onChange={(e) => handleChange("city", e.target.value)}
+              sx={inputSx}
             />
-
             <TextField
-                label="State"
-                fullWidth
-                value={formData.state}
-                onChange={(e) => handleChange("state", e.target.value)}
-                sx={inputSx}
+              label="State"
+              fullWidth
+              value={formData.state}
+              onChange={(e) => handleChange("state", e.target.value)}
+              sx={inputSx}
             />
-
             <Box className="latlong-row">
-            <TextField
+              <TextField
                 label="Latitude"
                 fullWidth
                 value={formData.lat}
                 onChange={(e) => handleChange("lat", e.target.value)}
                 sx={inputSx}
-            />
-            <TextField
+              />
+              <TextField
                 label="Longitude"
                 fullWidth
                 value={formData.lon}
                 onChange={(e) => handleChange("lon", e.target.value)}
                 sx={inputSx}
-            />
+              />
             </Box>
           </Box>
-        </Box>
-      )}
-
-      {/* ── Step 4: Done ── */}
-      {activeStep === 3 && (
-        <Box className="form-step form-step--done">
-          <Box className="done-icon">🎉</Box>
-          <Typography className="form-step-title">Your dashboard is ready</Typography>
-          <Typography className="form-step-sub">
-            AQI IQ has built your personalized exposure profile. Head to your dashboard
-            to see your real-time AQI, exposure score, and daily recommendations.
-          </Typography>
-          <Button className="btn-primary done-btn">Go to Dashboard →</Button>
         </Box>
       )}
 
       {/* ── Navigation buttons ── */}
       {activeStep < 3 && (
         <>
-        {error && (
-          <Typography sx={{ color: "#ef4444", fontSize: "14px", marginTop: "8px" }}>
-            {error}
-          </Typography>
-        )}
-        <Box className="form-nav">
-          {activeStep > 0 && (
-            <Button className="btn-ghost" onClick={onBack}>← Back</Button>
+          {error && (
+            <Typography sx={{ color: "#ef4444", fontSize: "14px", marginTop: "8px" }}>
+              {error}
+            </Typography>
           )}
+          <Box className="form-nav">
+            {activeStep > 0 && (
+              <Button className="btn-ghost" onClick={onBack}>← Back</Button>
+            )}
             <Button className="btn-primary" onClick={onNext} disabled={loading}>
-            {loading ? "Saving..." : activeStep === 2 ? "Finish Setup" : "Continue →"}
+              {loading ? "Saving..." : activeStep === 2 ? "Finish Setup" : "Continue →"}
             </Button>
-        </Box>
+          </Box>
         </>
       )}
 
-      {/* Step progress indicator */}
       <Box className="step-progress-dots">
         {STEPS.map((_, i) => (
           <Box
@@ -471,241 +580,249 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
 
 // ─────────────────────────────────────────────────────────────
 // MAIN EXPORT: Hero
-// Holds all state and renders both sections.
+//
+// NEW app states:
+//   "home"    — landing page (not authenticated)
+//   "setup"   — post-signup onboarding flow
+//   (login success → parent handles dashboard navigation)
 // ─────────────────────────────────────────────────────────────
-export default function Hero({onComplete}) {
+export default function Hero({ onComplete, onLoginSuccess }) {
 
+  // Controls which major section is shown
+  // "home" = landing + auth  |  "setup" = onboarding flow
+  const [appState, setAppState] = useState("home");
 
-  // ── Active step in the setup journey (0–3)
-  const [activeStep, setActiveStep] = useState(0);
+  // userId stored after successful signup or login
+  const [userId, setUserId] = useState(null);
 
-  // ── Which steps have been completed (indexes)
+  const navigate = useNavigate();
+
+  // ── Setup flow state ──
+  const [activeStep,     setActiveStep]     = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [loading,        setLoading]        = useState(false);
+  const [error,          setError]          = useState("");
 
-  const [createdUserId, setCreatedUserId] = useState(null);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  // ── All form data in one object
-  // → Replace with your API payload shape when submitting
+  // Setup form data — name/email/password handled in AuthSection
   const [formData, setFormData] = useState({
-  name: "",
-  dob: "",
-  email: "",
-  gender: "",
+    dob:    "",
+    gender: "",
 
-  isSmoker: false,
-  hasHeartCondition: false,
-  hasAsthma: false,
-  hasCOPD: false,
-  hasAllergy: false,
+    isSmoker:          false,
+    hasHeartCondition: false,
+    hasAsthma:         false,
+    hasCOPD:           false,
+    hasAllergy:        false,
 
-  city: "",
-  state: "",
-  lat: "",
-  lon: "",
-});
+    city:  "",
+    state: "",
+    lat:   "",
+    lon:   "",
+  });
 
-  // Move to next step and mark current as completed
+  // ── Called after successful signup ──
+  function handleSignupSuccess(newUserId) {
+    setUserId(newUserId);
+    setAppState("setup");          // move to onboarding
+    // Scroll to top of setup section
+    setTimeout(() => {
+      const el = document.querySelector(".setup-section");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }
+
+  // ── Called after successful login ──
+  function handleLoginSuccess(loggedInUserId) {
+    setUserId(loggedInUserId);
+    // Delegate navigation to parent (App.jsx)
+    if (onLoginSuccess) onLoginSuccess(loggedInUserId);
+    navigate("/dashboard");
+  }
+
+  // ── Setup step: Next ──
   async function handleNext() {
-  try {
     setError("");
     setLoading(true);
 
-    if (activeStep === 0) {
-      const userPayload = {
-        name: formData.name,
-        dob: formData.dob,
-        email: formData.email,
-        gender: formData.gender,
-      };
+    try {
+      if (activeStep === 0) {
+        // Update existing user profile — dob + gender only
+        // User was already created during signup
+        if (!userId) throw new Error("User ID missing. Please sign up again.");
 
-      const userRes = await createUser(userPayload);
-
-      // IMPORTANT: this depends on backend returning insertId or user id
-      const newUserId = userRes.data?.id || userRes.id || userRes.user_id || userRes.insertId;
-
-      if (!newUserId) {
-        throw new Error("User created but no user id returned from backend.");
+        await updateUserProfile(userId, {
+          dob:     formData.dob,
+          gender:  formData.gender,
+        });
       }
 
-      setCreatedUserId(newUserId);
-    }
+      if (activeStep === 1) {
+        if (!userId) throw new Error("User ID missing.");
 
-    if (activeStep === 1) {
-      if (!createdUserId) throw new Error("User ID missing.");
-
-      const healthPayload = {
-        user_id: createdUserId,
-        isSmoker: formData.isSmoker,
-        hasHeartCondition: formData.hasHeartCondition,
-        hasAsthma: formData.hasAsthma,
-        hasCOPD: formData.hasCOPD,
-        hasAllergy: formData.hasAllergy,
-      };
-
-      await createHealthProfile(healthPayload);
-    }
-
-    if (activeStep === 2) {
-      if (!createdUserId) throw new Error("User ID missing.");
-
-      const locationPayload = {
-        user_id: createdUserId,
-        city: formData.city,
-        state: formData.state,
-        lat: formData.lat,
-        lon: formData.lon,
-      };
-
-      await createLocation(locationPayload);
-    }
-
-    if (!completedSteps.includes(activeStep)) {
-      setCompletedSteps((prev) => [...prev, activeStep]);
-    }
-
-    if (activeStep === 2) {
-      setCompletedSteps((prev) =>
-        prev.includes(3) ? prev : [...prev, 3]
-      );
-
-      if (onComplete) {
-        onComplete();
+        await createHealthProfile({
+          user_id:          userId,
+          isSmoker:         formData.isSmoker,
+          hasHeartCondition:formData.hasHeartCondition,
+          hasAsthma:        formData.hasAsthma,
+          hasCOPD:          formData.hasCOPD,
+          hasAllergy:       formData.hasAllergy,
+        });
       }
-    } else {
-      setActiveStep((prev) => Math.min(prev + 1, STEPS.length - 1));
-    }
 
-  } catch (err) {
-    console.error(err);
-    setError(err.message || "Something went wrong.");
-  } finally {
-    setLoading(false);
+      if (activeStep === 2) {
+        if (!userId) throw new Error("User ID missing.");
+
+        await createLocation({
+          user_id: userId,
+          city:    formData.city,
+          state:   formData.state,
+          lat:     formData.lat,
+          lon:     formData.lon,
+        });
+      }
+
+      // Mark current step complete
+      if (!completedSteps.includes(activeStep)) {
+        setCompletedSteps((prev) => [...prev, activeStep]);
+      }
+
+      if (activeStep === 2) {
+        if (onComplete) onComplete(userId);
+        navigate("/dashboard")
+      } else {
+        setActiveStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+      }
+
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-  // Go back one step
   function handleBack() {
     setActiveStep((prev) => Math.max(prev - 1, 0));
   }
 
-  // Clicking a step in the tracker jumps to it
   function handleStepClick(index) {
     setActiveStep(index);
   }
 
-  function scrollToSetup() {
-  const el = document.querySelector(".setup-section");
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth" });
+  function scrollToAuth() {
+    const el = document.querySelector(".auth-section");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   }
-}
 
   return (
-    <Box className={"page-root"}>
+    <Box className="page-root">
 
       {/* ════════════════════════════════════════════════════
-          SECTION 1 — HERO
+          SECTION 1 — HERO (always visible when not in setup)
       ════════════════════════════════════════════════════ */}
-      <Box component="section" className="hero-section" id="aqi-info">
-        {/* Decorative radial background accent */}
-        <Box className="hero-bg-glow" />
+      {appState === "home" && (
+        <>
+          <Box component="section" className="hero-section" id="aqi-info">
+            <Box className="hero-bg-glow" />
 
-        <Box className="hero-inner">
-
-          {/* ── LEFT: Headline + CTAs ── */}
-          <Box className="hero-left">
-
-            {/* Product label */}
-            <Box className="hero-eyebrow">
-              <Box className="eyebrow-dot" />
-              AQI IQ
-            </Box>
-
-            {/* Main headline */}
-            <Typography className="hero-headline">
-              Air Quality,
-              <br />
-              <span className="headline-muted">Personalized for You.</span>
-            </Typography>
-
-            {/* Description */}
-            <Typography className="hero-description">
-              AQI IQ combines real-time air quality data with your health profile and location to generate an exposure score and recommendations tailored to you.
-            </Typography>
-
-            {/* Feature list */}
-            <Box className="hero-features">
-              {[
-                "Real-time AQI from trusted sensor networks",
-                "Health-based exposure score, not just raw numbers",
-                "Daily recommendations matched to your conditions",
-              ].map((f) => (
-                <Box key={f} className="feature-row">
-                  <span className="feature-check">✓</span>
-                  <Typography className="feature-text">{f}</Typography>
+            <Box className="hero-inner">
+              {/* ── LEFT: Headline + CTAs ── */}
+              <Box className="hero-left">
+                <Box className="hero-eyebrow">
+                  <Box className="eyebrow-dot" />
+                  AQI IQ
                 </Box>
-              ))}
+
+                <Typography className="hero-headline">
+                  Air Quality,
+                  <br />
+                  <span className="headline-muted">Personalized for You.</span>
+                </Typography>
+
+                <Typography className="hero-description">
+                  AQI IQ combines real-time air quality data with your health profile and location
+                  to generate an exposure score and recommendations tailored to you.
+                </Typography>
+
+                <Box className="hero-features">
+                  {[
+                    "Real-time AQI from trusted sensor networks",
+                    "Health-based exposure score, not just raw numbers",
+                    "Daily recommendations matched to your conditions",
+                  ].map((f) => (
+                    <Box key={f} className="feature-row">
+                      <span className="feature-check">✓</span>
+                      <Typography className="feature-text">{f}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+
+                <Box className="hero-ctas">
+                  <Button className="btn-primary" onClick={scrollToAuth}>
+                    Get Started
+                  </Button>
+                  <Button className="btn-ghost" component={Link} to="/aqi-info">
+                    Learn More
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* ── RIGHT: AQI Preview Card ── */}
+              <Box className="hero-right">
+                <AQICard data={AQI_CARD_DATA} />
+              </Box>
             </Box>
 
-            {/* CTA buttons */}
-            <Box className="hero-ctas">
-              <Button className="btn-primary" onClick={scrollToSetup}>
-                Get Started
-              </Button>
-              <Button className="btn-ghost" onClick={scrollToSetup}>
-                Learn More
-              </Button>
-            </Box>
+            <ScrollIndicator />
           </Box>
 
-          {/* ── RIGHT: AQI Preview Card ── */}
-          <Box className="hero-right">
-            <AQICard data={AQI_CARD_DATA} />
-          </Box>
-        </Box>
-
-        {/* ── Scroll Indicator (bottom of hero) ── */}
-        <ScrollIndicator />
-      </Box>
-
+          {/* ════════════════════════════════════════════════════
+              SECTION 2 — AUTH (Sign Up / Login)
+              NEW: replaces old "Setup Journey" as the first entry point.
+              User is NOT authenticated yet at this point.
+          ════════════════════════════════════════════════════ */}
+          <AuthSection
+            onSignupSuccess={handleSignupSuccess}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        </>
+      )}
 
       {/* ════════════════════════════════════════════════════
-          SECTION 2 — SETUP JOURNEY
+          SECTION 3 — SETUP JOURNEY (post-signup onboarding)
+          Only shown after successful signup.
+          User account already exists — we update, not create.
       ════════════════════════════════════════════════════ */}
-      <Box component="section" className="setup-section" id="setup">
-        <Box className="setup-section-header">
+      {appState === "setup" && (
+        <Box component="section" className="setup-section" id="setup">
+          <Box className="setup-section-header">
             <Typography className="setup-eyebrow">Setup Journey</Typography>
             <Typography className="setup-heading">
-                Set up your profile in minutes
+              Set up your profile in minutes
             </Typography>
             <Typography className="setup-subheading">
-                Tell us about your health and location so AQI IQ can personalize your air-quality insights.
+              Tell us about your health and location so AQI IQ can personalise your air-quality insights.
             </Typography>
-        </Box>
-        <Box className="setup-inner">
+          </Box>
 
-          {/* ── LEFT: Vertical Step Tracker ── */}
-          <StepTracker
-            activeStep={activeStep}
-            completedSteps={completedSteps}
-            onStepClick={handleStepClick}
-          />
-
-          {/* ── RIGHT: Animated Form Panel ── */}
-          <FormPanel
-            activeStep={activeStep}
-            formData={formData}
-            setFormData={setFormData}
-            onNext={handleNext}
-            onBack={handleBack}
-            loading={loading}
-            error={error}
+          <Box className="setup-inner">
+            <StepTracker
+              activeStep={activeStep}
+              completedSteps={completedSteps}
+              onStepClick={handleStepClick}
             />
-
+            <FormPanel
+              activeStep={activeStep}
+              formData={formData}
+              setFormData={setFormData}
+              onNext={handleNext}
+              onBack={handleBack}
+              loading={loading}
+              error={error}
+            />
+          </Box>
         </Box>
-      </Box>
+      )}
 
     </Box>
   );

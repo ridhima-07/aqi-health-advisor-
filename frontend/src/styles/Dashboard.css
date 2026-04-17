@@ -25,6 +25,42 @@
   font-family: 'Inter', sans-serif;
 }
 
+.dashboard-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: -2px;
+}
+
+.dashboard-page-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #EEEEEE;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #9BA4B5;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.logout-btn:hover {
+  color: #EEEEEE;
+  border-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.04);
+}
+
 /* ─── Page Shell ─────────────────────────────────── */
 .dashboard {
   min-height: 100vh;
