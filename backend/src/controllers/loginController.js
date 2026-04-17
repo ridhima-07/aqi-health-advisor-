@@ -18,10 +18,10 @@ export async function login ( req, res )
         if ( !isMatch )
             return res.status(401).json({success: false, message: "Invalid credentials!"});
 
-        res.status(200).json({success: true, message: "User logged in successfully!", data: {id: user.id}});
+        return res.status(200).json({success: true, message: "User logged in successfully!", data: {id: user.id}});
 
     } catch ( error ){
         console.log(error);
-        res.status(500).json({success: false, message: "User could not be logged in."});
+        return res.status(500).json({success: false, message: "User could not be logged in."});
     }
 };

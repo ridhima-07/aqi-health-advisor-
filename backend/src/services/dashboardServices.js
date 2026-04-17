@@ -6,6 +6,14 @@ import { calcExposureScore, calcExposureLabel } from "../utils/exposureUtils.js"
 import { fetchAqi } from "../services/aqiServices.js";
 import { getAqiReadingsByLocationID } from "../queries/aqi.js";
 
+function getCigaretteEquivalent(aqi) {
+  if (aqi <= 50) return "0 cigarettes";
+  if (aqi <= 100) return "~1 cigarette";
+  if (aqi <= 150) return "~2–3 cigarettes";
+  if (aqi <= 200) return "~4–6 cigarettes";
+  return "7+ cigarettes";
+}
+
 export async function dashboardData (user_id)
 {
     try {
@@ -20,6 +28,8 @@ export async function dashboardData (user_id)
         const live_aqi = await fetchAqi(location_id);
         if (!live_aqi) return null;
 
+        const cigaretteEquivalent = getCigaretteEquivalent(live_aqi?.aqiValue || 0);
+
         const aqis = await getAqiReadingsByLocationID(location_id);
         const aqiLabel = getAqiLabel (live_aqi.aqi_level);
         const riskLevel = calculateRiskLevel (live_aqi.aqi_level, health_profile);
@@ -30,6 +40,7 @@ export async function dashboardData (user_id)
                     location: location,
                     aqi: live_aqi,
                     aqiLabel: aqiLabel,
+                    cigaretteEquivalent: cigaretteEquivalent,
                     riskLevel: riskLevel,
                     exposureScore: exp_score,
                     exposureLabel: exp_label,
