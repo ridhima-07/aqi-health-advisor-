@@ -50,7 +50,7 @@ function App() {
           path="/recommendations"
           element={
             userId ? (
-              <Recommendations userId={userId} />
+              <Recommendations userId={userId} onLogout={()=> setUserId(null)}/>
             ) : (
               <Navigate to="/" replace />
             )
