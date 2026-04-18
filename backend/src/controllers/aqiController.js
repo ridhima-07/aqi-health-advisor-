@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { fetchAqi } from "../services/aqiServices.js";
+import { fetchAqi, fetchAqiByCity } from "../services/aqiServices.js";
 import {getAqiReadingsByLocationID, getLatestAqiReadingByLocationID} from "../queries/aqi.js";
 
 export async function fetchAQI (req, res) {
@@ -30,7 +30,7 @@ export async function getAqiHistory (req, res) {
         console.log(error);
         res.status(500).json({ success: false, message: "Failed to fetch AQI history" });
     }
-}
+};
 
 export async function getLatestAqi (req, res) {
     try {
@@ -43,4 +43,38 @@ export async function getLatestAqi (req, res) {
         console.log(error);
         res.status(500).json({ success: false, message: "Failed to fetch latest AQI reading" });
     }
+};
+
+export async function getAqiByCity(req, res) {
+  try {
+    const cityName = req.query.name;
+
+    if (!cityName || !cityName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "City name is required.",
+      });
+    }
+
+    const result = await fetchAqiByCity(cityName.trim());
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.log("getAqiByCity error:", error.message);
+
+    if (error.message === "Location not found") {
+      return res.status(404).json({
+        success: false,
+        message: "Location not found.",
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch AQI for this location.",
+    });
+  }
 }

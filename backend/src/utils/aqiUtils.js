@@ -14,6 +14,15 @@ export function getAqiLabel ( aqiLevel )
         }
 };
 
+export function  getAqiBandLabel(aqiValue) {
+  if (aqiValue <= 50) return "Good";
+  if (aqiValue <= 100) return "Fair";
+  if (aqiValue <= 150) return "Moderate";
+  if (aqiValue <= 200) return "Poor";
+  if (aqiValue <= 300) return "Very Poor";
+  return "Hazardous";
+}
+
 export function calculateRiskLevel ( aqiLevel, healthProfile )
 {
     let score = aqiLevel - 1;
@@ -36,7 +45,7 @@ export function calculateRiskLevel ( aqiLevel, healthProfile )
 
 export async function getApi (lat, lon) {
     try {
-        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.API_KEY}`);
+        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.OP_API_KEY}`);
         const data = await response.json();
         return data;
     } catch ( error ) {
