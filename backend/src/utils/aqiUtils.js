@@ -45,7 +45,7 @@ export function calculateRiskLevel ( aqiLevel, healthProfile )
 
 export async function getApi (lat, lon) {
     try {
-        const response = await fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.OP_API_KEY}`);
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.OP_API_KEY}`);
         const data = await response.json();
         return data;
     } catch ( error ) {
