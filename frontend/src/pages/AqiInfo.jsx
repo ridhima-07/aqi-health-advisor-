@@ -13,6 +13,8 @@
 // ============================================================
 
 import "../styles/AqiInfo.css";
+import { useState } from "react";
+import { getAqiByCity } from "../services/aqi";
 
 // ─────────────────────────────────────────────────────────────
 // DATA
@@ -131,7 +133,6 @@ const DID_YOU_KNOW = [
   },
 ];
 
-
 // ─────────────────────────────────────────────────────────────
 // COMPONENTS
 // ─────────────────────────────────────────────────────────────
@@ -144,17 +145,146 @@ function SectionHeading({ children }) {
   return <h2 className="ai-section-heading">{children}</h2>;
 }
 
+function getAqiColor(label) {
+  switch (label) {
+    case "Good":
+      return "#3DDC84";
+    case "Fair":
+      return "#F5C842";
+    case "Moderate":
+      return "#FF8C42";
+    case "Poor":
+    case "Very Poor":
+    case "Hazardous":
+      return "#FF4C4C";
+    default:
+      return "#EEEEEE";
+  }
+}
+
+function getAqiClass(label) {
+  switch (label) {
+    case "Good":
+      return "ai-result-good";
+    case "Fair":
+      return "ai-result-fair";
+    case "Moderate":
+      return "ai-result-moderate";
+    case "Poor":
+    case "Very Poor":
+    case "Hazardous":
+      return "ai-result-poor";
+    default:
+      return "";
+  }
+}
 
 // ─────────────────────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────
 
 export default function AqiInfo() {
+    const [city, setCity] = useState("");
+    const [aqiData, setAqiData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    async function handleSearch() {
+        try {
+            if (!city.trim()) return;
+
+            setLoading(true);
+            setError("");
+            setAqiData(null);
+
+            const result = await getAqiByCity(city.trim());
+            setAqiData(result.data);
+        } catch (err) {
+            console.error(err);
+            setError("Could not fetch AQI for that location.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
   return (
     <div className="ai-root">
 
+        {/* ══════════════════════════════════════════════════
+          1. CHECK AQI ANYWHERE (placeholder)
+      ══════════════════════════════════════════════════ */}
+      <section className="ai-section ai-section--alt ai-cta-section">
+        <div className="ai-container">
+            <div className="ai-cta-inner">
+            <SectionLabel>Explore</SectionLabel>
+            <h2 className="ai-section-heading">Check AQI Anywhere</h2>
+            <p className="ai-body-text ai-cta-body">
+                Search any city to view its current air quality and pollutant levels.
+            </p>
+
+            <div className="ai-cta-search">
+                <input
+                className="ai-cta-input"
+                type="text"
+                placeholder="e.g. Mumbai, Delhi, Bangalore…"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
+                }}
+                disabled={loading}
+                />
+                <button className="ai-cta-btn" onClick={handleSearch} disabled={loading}>
+                {loading ? "Searching..." : "Search"}
+                </button>
+            </div>
+
+            {error && <p className="ai-cta-note ai-cta-error">{error}</p>}
+
+            {aqiData && aqiData.location && (
+               <div className={`ai-search-result ${getAqiClass(aqiData.aqiLabel)}`}>
+                <div className="ai-search-result-top">
+                    <div>
+                    <p className="ai-search-location">
+                        {aqiData.location.name}
+                        {aqiData.location.state ? `, ${aqiData.location.state}` : ""}
+                        {aqiData.location.country ? `, ${aqiData.location.country}` : ""}
+                    </p>
+                    <p className="ai-search-time">
+                        Updated {new Date(aqiData.fetchedAt).toLocaleString()}
+                    </p>
+                    </div>
+
+                    <div className="ai-search-aqi-block">
+                    <div className="ai-search-aqi-number" style={{ color: getAqiColor(aqiData.aqiLabel) }}>{aqiData.aqiValue}</div>
+                    <div className="ai-search-aqi-badge" style={{
+                        color: getAqiColor(aqiData.aqiLabel),
+                        background: `${getAqiColor(aqiData.aqiLabel)}14`,
+                        borderColor: `${getAqiColor(aqiData.aqiLabel)}40`,
+                    }} > {aqiData.aqiLabel} </div>
+                    </div>
+                </div>
+
+                {aqiData.dominantPollutant && (
+                    <p className="ai-search-dominant">
+                    Main pollutant: {aqiData.dominantPollutant}
+                    </p>
+                )}
+
+                <div className="ai-search-pill ai-search-pill--moderate">PM2.5: {aqiData.pollutants.pm2_5}</div>
+                <div className="ai-search-pill ai-search-pill--moderate">PM10: {aqiData.pollutants.pm10}</div>
+                <div className="ai-search-pill ai-search-pill--fair">NO₂: {aqiData.pollutants.no2}</div>
+                <div className="ai-search-pill ai-search-pill--fair">O₃: {aqiData.pollutants.o3}</div>
+                <div className="ai-search-pill ai-search-pill--good">CO: {aqiData.pollutants.co}</div>
+                <div className="ai-search-pill ai-search-pill--good">SO₂: {aqiData.pollutants.so2}</div>
+                </div>
+            )}
+            </div>
+        </div>
+      </section>
+
       {/* ══════════════════════════════════════════════════
-          1. HERO
+          2. HERO
       ══════════════════════════════════════════════════ */}
       <section className="ai-hero">
         <div className="ai-hero-inner">
@@ -175,7 +305,7 @@ export default function AqiInfo() {
 
 
       {/* ══════════════════════════════════════════════════
-          2. WHAT IS AQI
+          3. WHAT IS AQI
       ══════════════════════════════════════════════════ */}
       <section className="ai-section">
         <div className="ai-container">
@@ -218,7 +348,7 @@ export default function AqiInfo() {
 
 
       {/* ══════════════════════════════════════════════════
-          3. AQI LEVELS
+          4. AQI LEVELS
       ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-section--alt">
         <div className="ai-container">
@@ -253,7 +383,7 @@ export default function AqiInfo() {
 
 
       {/* ══════════════════════════════════════════════════
-          4. MAIN POLLUTANTS
+          5. MAIN POLLUTANTS
       ══════════════════════════════════════════════════ */}
       <section className="ai-section">
         <div className="ai-container">
@@ -282,7 +412,7 @@ export default function AqiInfo() {
 
 
       {/* ══════════════════════════════════════════════════
-          5. WHO SHOULD BE CAREFUL
+          6. WHO SHOULD BE CAREFUL
       ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-section--alt">
         <div className="ai-container">
@@ -309,7 +439,7 @@ export default function AqiInfo() {
 
 
       {/* ══════════════════════════════════════════════════
-          6. REAL-WORLD IMPACT — DID YOU KNOW
+          7. REAL-WORLD IMPACT — DID YOU KNOW
       ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-dyk-section">
         <div className="ai-container">
@@ -340,7 +470,7 @@ export default function AqiInfo() {
 
 
       {/* ══════════════════════════════════════════════════
-          7. HOW AQI IQ HELPS
+          8. HOW AQI IQ HELPS
       ══════════════════════════════════════════════════ */}
       <section className="ai-section">
         <div className="ai-container">
@@ -375,39 +505,6 @@ export default function AqiInfo() {
                 <li>Location-accurate live data</li>
               </ul>
             </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ══════════════════════════════════════════════════
-          8. CHECK AQI ANYWHERE (placeholder)
-      ══════════════════════════════════════════════════ */}
-      <section className="ai-section ai-section--alt ai-cta-section">
-        <div className="ai-container">
-          <div className="ai-cta-inner">
-            <SectionLabel>Coming Soon</SectionLabel>
-            <h2 className="ai-section-heading">Check AQI Anywhere</h2>
-            <p className="ai-body-text ai-cta-body">
-              Search any city to view its current air quality and pollutant levels.
-              Full city search is coming soon.
-            </p>
-
-            <div className="ai-cta-search">
-              <input
-                className="ai-cta-input"
-                type="text"
-                placeholder="e.g. Mumbai, Delhi, Bangalore…"
-                disabled
-              />
-              <button className="ai-cta-btn" disabled>
-                Search
-              </button>
-            </div>
-
-            <p className="ai-cta-note">
-              This feature is not yet available. Stay tuned for updates.
-            </p>
           </div>
         </div>
       </section>

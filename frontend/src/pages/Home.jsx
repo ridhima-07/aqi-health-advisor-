@@ -6,7 +6,7 @@ export default function Home({ userId, onComplete, onLoginSuccess }) {
     <div className="theme-dark">
       <Navbar userId={userId}/>
       <main>
-        <Hero onComplete={onComplete} onLoginSuccess={onLoginSuccess} cigaretteEquivalent={currentData.cigaretteEquivalent}/>
+        <Hero onComplete={onComplete} onLoginSuccess={onLoginSuccess}/>
       </main>
     </div>
   );
