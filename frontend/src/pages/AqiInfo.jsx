@@ -14,6 +14,7 @@
 
 import "../styles/AqiInfo.css";
 import { useState } from "react";
+import Navbar from "../components/Navbar";
 import { getAqiByCity } from "../services/aqi";
 
 // ─────────────────────────────────────────────────────────────
@@ -183,7 +184,7 @@ function getAqiClass(label) {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────
 
-export default function AqiInfo() {
+export default function AqiInfo({ userId, onLogout }) {
     const [city, setCity] = useState("");
     const [aqiData, setAqiData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -209,7 +210,7 @@ export default function AqiInfo() {
 
   return (
     <div className="ai-root">
-
+        <Navbar userId={userId} onLogout={onLogout} />
         {/* ══════════════════════════════════════════════════
           1. CHECK AQI ANYWHERE (placeholder)
       ══════════════════════════════════════════════════ */}

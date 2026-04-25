@@ -25,6 +25,13 @@
   font-family: 'Inter', sans-serif;
 }
 
+.dashboard-page-subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #9BA4B5;
+  font-weight: 400;
+}
+
 .dashboard-page-header {
   display: flex;
   align-items: center;
@@ -199,7 +206,9 @@
 }
 
 .aqi-fact {
-  margin-top: 14px;
+  margin-top: 50px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.05);
   font-size: 12.5px;
   line-height: 1.6;
   color: #9BA4B5;
@@ -614,12 +623,102 @@
 }
 
 .trend-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-}
-.trend-labels span {
-  font-size: 10px;
+  position: relative;
+  height: 18px;
+  margin-top: 10px;
   color: #9BA4B5;
-  font-weight: 400;
+  font-size: 11px;
+}
+
+.trend-label {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.trend-label:first-child {
+  transform: translateX(0);
+}
+
+.trend-label:last-child {
+  transform: translateX(-100%);
+}
+
+.dashboard-links-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.dashboard-link-card {
+  background: #252b36;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 22px;
+  text-decoration: none;
+  color: #EEEEEE;
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.dashboard-link-card:hover {
+  border-color: rgba(255,255,255,0.16);
+  background: #2c3140;
+  transform: translateY(-2px);
+}
+
+.dashboard-link-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9BA4B5;
+  margin-bottom: 8px;
+}
+
+.dashboard-link-card strong {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.dashboard-link-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #C2CAD6;
+  line-height: 1.6;
+}
+
+.dashboard-state-card {
+  margin: 48px auto;
+  max-width: 620px;
+  background: #252b36;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 28px;
+  color: #C2CAD6;
+  text-align: center;
+}
+
+.dashboard-state-card--error {
+  color: #f87171;
+}
+
+.dashboard-state-btn {
+  margin-top: 16px;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: #EEEEEE;
+  color: #222831;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .dashboard-links-grid {
+    grid-template-columns: 1fr;
+  }
 }

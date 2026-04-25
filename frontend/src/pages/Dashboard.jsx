@@ -1,46 +1,8 @@
+import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
 import { getDashboardData, fetchLatestAqi } from "../services/dashboardService";
 import "../styles/Dashboard.css";
-
-// ─── Placeholder Data ──────────────────────────────────────────────────────
-// Replace with real API data or props when ready.
-// const DATA = {
-//   location:      'Mumbai, Bandra West',
-//   updatedAt:     'Updated 4 min ago',
-
-//   // AQI
-//   aqiValue:      143,
-//   aqiLabel:      'Moderate',    // 'Good' | 'Fair' | 'Moderate' | 'Poor'
-
-//   // Decision strip
-//   exposureScore: 68,
-//   riskLevel:     'Moderate Risk',
-//   action:        'Stay indoors',
-//   actionDetail:  'if sensitive',  // appended in severity color
-
-//   // Health advisory (max 4 bullets)
-//   advisory: [
-//     'Avoid prolonged outdoor exertion.',
-//     'Keep windows closed; run air purifier if available.',
-//     'Wear N95 mask if going outside.',
-//     'Sensitive groups (asthma, elderly) should stay indoors.',
-//   ],
-
-//   // Pollutants
-//   pollutants: [
-//     { name: 'PM2.5',  value: 58.4, unit: 'µg/m³', pct: 78, level: 'moderate' },
-//     { name: 'PM10',   value: 92.1, unit: 'µg/m³', pct: 62, level: 'moderate' },
-//     { name: 'NO₂',   value: 34.2, unit: 'ppb',    pct: 45, level: 'fair'     },
-//     { name: 'O₃',    value: 18.7, unit: 'ppb',    pct: 28, level: 'good'     },
-//     { name: 'CO',     value: 0.9,  unit: 'ppm',    pct: 18, level: 'good'     },
-//   ],
-
-//   // Trend — last 8 readings (oldest → newest), 0–500
-//   trend: [88, 101, 119, 134, 128, 143, 156, 143],
-//   trendHours: ['6h', '5h', '4h', '3h', '2h', '1h', '30m', 'Now'],
-// };
-
-
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -56,6 +18,21 @@ function aqiToPercent(value) {
   return Math.min(100, Math.max(0, (value / 500) * 100));
 }
 
+function formatTrendTime(dateValue) {
+  if (!dateValue) return "Now";
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Now";
+  }
+
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 // ─── Sub-components ────────────────────────────────────────────────────────
 
 function RefreshIcon() {
@@ -69,7 +46,6 @@ function RefreshIcon() {
   );
 }
 
-// CHANGE 1 — Circular exposure ring for the hero right column
 function ExposureRing({ score, label }) {
   const RADIUS = 51;                        // was 44 — scaled for 136px container
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -198,8 +174,6 @@ function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposure
 }
 
 // ─── Section 2: Decision Strip ─────────────────────────────────────────────
-// CHANGE 2 — Exposure Score removed; only Risk Level + Best Action remain
-// CHANGE 3 — "View all recommendations" link added under Best Action
 function DecisionStrip({ riskLevel, action, actionDetail }) {
   return (
     <div className="strip" role="region" aria-label="Decision summary">
@@ -210,23 +184,21 @@ function DecisionStrip({ riskLevel, action, actionDetail }) {
       </div>
 
       <div className="strip-item strip-item--action">
-        <span className="strip-label">Best Action</span>
+        <span className="strip-label">Today’s Priority</span>
         <span className="strip-value">
           {action}{' '}
           <span>{actionDetail}</span>
         </span>
-        {/* CHANGE 3 — subtle "View all recommendations" link */}
-        <a href="#advisory" className="view-all-link">
-          View all recommendations →
-        </a>
+        <Link to="/recommendations" className="view-all-link">
+          Open full action plan →
+        </Link>
       </div>
 
     </div>
   );
 }
 
-// CHANGE 4 — Bold the leading action word in each advisory bullet
-// Words to bold: Avoid, Keep, Wear, Stay
+
 const ACTION_WORDS = ['Avoid', 'Keep', 'Wear', 'Stay'];
 
 function BoldActionWord({ text }) {
@@ -246,14 +218,12 @@ function BoldActionWord({ text }) {
 // ─── Section 3A: Health Advisory ──────────────────────────────────────────
 function HealthAdvisory({ items }) {
   return (
-    // CHANGE 3 — id="advisory" so the "View all recommendations" anchor scrolls here
     <div className="panel" id="advisory">
       <h2 className="panel-title">Health Advisory</h2>
       <ul className="advisory-list" aria-label="Health advisory points">
         {items.map((text, i) => (
           <li key={i} className="advisory-item">
             <span className="advisory-dot" aria-hidden="true" />
-            {/* CHANGE 4 — bold leading action word */}
             <BoldActionWord text={text} />
           </li>
         ))}
@@ -300,11 +270,24 @@ function TrendPanel({ values, labels, sevClass }) {
   const W = 800;
   const H = 72;
   const PAD = 10;
-  const max = 500;
+  const numericValues = values.map(Number);
+  const max = Math.max(...numericValues);
+  const min = Math.min(...numericValues);
+
+  const rawRange = max - min;
+  const padding = Math.max(8, rawRange * 0.25);
+
+  const chartMin = Math.max(0, min - padding);
+  const chartMax = Math.min(500, max + padding);
+  const chartRange = chartMax - chartMin || 1;
 
   const points = values.map((v, i) => {
-    const x = PAD + (i / (values.length - 1)) * (W - PAD * 2);
-    const y = H - PAD - ((v / max) * (H - PAD * 2));
+    const x =
+      values.length === 1
+        ? W / 2
+        : PAD + (i / (values.length - 1)) * (W - PAD * 2);
+
+    const y = H - PAD - (((v - chartMin) / chartRange) * (H - PAD * 2));
     return `${x},${y}`;
   });
 
@@ -359,9 +342,25 @@ function TrendPanel({ values, labels, sevClass }) {
       </svg>
 
       <div className="trend-labels">
-        {labels.map((l) => (
-          <span key={l}>{l}</span>
-        ))}
+        {labels.map((label, index) => {
+          const left =
+            labels.length === 1
+              ? 50
+              : (index / (labels.length - 1)) * 100;
+
+          const shouldShow =
+            index === 0 || index === labels.length - 1 || index % 2 === 0;
+
+          return (
+            <span
+              key={`${label}-${index}`}
+              className="trend-label"
+              style={{ left: `${left}%` }}
+            >
+              {shouldShow ? label : ""}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -374,91 +373,110 @@ export default function Dashboard({userId, onLogout}) {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-  async function loadDashboard() {
-    try {
-      setLoading(true);
-      setError("");
-
-      const result = await getDashboardData(userId);
-      setDashboardData(result.data);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load dashboard data.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (userId) {
-    loadDashboard();
-  }
-}, [userId]);
-
-  async function handleFetch() {
-  try {
-    if (!dashboardData?.location?.id) return;
-
-    const latestAqiResponse = await fetchLatestAqi(dashboardData.location.id);
-    const latestAqi = latestAqiResponse.data;
-
-    setDashboardData((prev) => {
-      if (!prev) return prev;
-
-      return {
-        ...prev,
-        aqi: latestAqi,
-        aqiLabel: prev.aqiLabel, // temporary until recalculated below
-      };
-    });
-
-    // reload complete dashboard so exposure, advisory, and other derived fields stay correct
-    const refreshed = await getDashboardData(dashboardData.user.id);
-    setDashboardData(refreshed.data);
-  } catch (err) {
-    console.error(err);
-    setError("Failed to fetch latest AQI.");
-  }
-}
+  const [aqiHistory, setAqiHistory] = useState([]);
 
   const currentData = dashboardData || null;
 
-  if (loading) {
-    return (
-      <main className="dashboard">
-        <header className="dashboard-page-header">
-          <h1 className="dashboard-page-title">DASHBOARD</h1>
-        </header>
-        <p style={{ color: "#9BA4B5" }}>Loading dashboard...</p>
-      </main>
-    );
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const result = await getDashboardData(userId);
+        setDashboardData(result.data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (userId) {
+      loadDashboard();
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!currentData) return;
+
+    const backendHistory = currentData.aqiHistory || [];
+
+    if (backendHistory.length) {
+      setAqiHistory(
+        backendHistory.slice(-8).map((item) => ({
+          label: formatTrendTime(item.fetchedAt || item.created_at || item.timestamp),
+          value: item.aqiValue || item.aqi_value || item.aqi_level || 0,
+        }))
+      );
+    } else if (currentData.aqi?.aqiValue) {
+      setAqiHistory([
+        {
+          label: formatTrendTime(currentData.aqi.fetchedAt || new Date()),
+          value: currentData.aqi.aqiValue,
+        },
+      ]);
+    }
+  }, [currentData]);
+
+  async function handleFetch() {
+    try {
+      if (!dashboardData?.location?.id) return;
+
+      setError("");
+
+      await fetchLatestAqi(dashboardData.location.id);
+
+      const refreshed = await getDashboardData(dashboardData.user.id);
+      setDashboardData(refreshed.data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch latest AQI.");
+    }
   }
 
+  if (loading) {
+  return (
+    <main className="dashboard">
+      <Navbar userId={userId} onLogout={onLogout} />
+      <div className="dashboard-state-card">
+        Loading your dashboard...
+      </div>
+    </main>
+  );
+}
+
   if (error) {
-    return (
-      <main className="dashboard">
-        <header className="dashboard-page-header">
-          <h1 className="dashboard-page-title">DASHBOARD</h1>
-        </header>
-        <p style={{ color: "#f87171" }}>{error}</p>
-      </main>
-    );
-  }
+  return (
+    <main className="dashboard">
+      <Navbar userId={userId} onLogout={onLogout} />
+      <div className="dashboard-state-card dashboard-state-card--error">
+        <p>{error}</p>
+        <button className="dashboard-state-btn" onClick={() => window.location.reload()}>
+          Try again
+        </button>
+      </div>
+    </main>
+  );
+}
 
   if (!currentData) {
           return null;
         }
 
-  const trendValues =
-  currentData.aqiHistory?.length
-    ? currentData.aqiHistory.map((item) => item.aqi_value || item.aqiValue || 0)
-    : [currentData.aqi.aqiValue];
+  const effectiveHistory =
+    aqiHistory.length > 0
+      ? aqiHistory
+      : [
+          {
+            label: "Now",
+            value: currentData.aqi.aqiValue,
+          },
+        ];
 
-  const trendLabels =
-    currentData.aqiHistory?.length
-      ? currentData.aqiHistory.map((_, index) => `${currentData.aqiHistory.length - index}h`)
-      : ["Now"];
+  const trendValues = effectiveHistory.map((item) => item.value);
+  const trendLabels = effectiveHistory.map((item) => item.label);
 
   const sevClass = currentData?.aqi?.aqiValue
   ? severityClass(currentData.aqi.aqiValue)
@@ -531,21 +549,26 @@ export default function Dashboard({userId, onLogout}) {
     <main className={`dashboard ${sevClass}`}>
       <Navbar userId={userId} onLogout={onLogout} />
       <header className="dashboard-page-header">
-        <h1 className="dashboard-page-title">DASHBOARD</h1>
+        <div>
+          <h1 className="dashboard-page-title">DASHBOARD</h1>
+          <p className="dashboard-page-subtitle">
+            Your personalized air quality overview
+          </p>
+        </div>
       </header>
       {/* ── Section 1: Hero ─────────────────────────── */}
       <Hero
-        location={`${currentData.location.city}, ${currentData.location.state}`}
+        location={`${currentData.location.city}${currentData.location.state ? `, ${currentData.location.state}` : ""}`}
         updatedAt={new Date(currentData.aqi.fetchedAt).toLocaleString()}
         aqiValue={currentData.aqi.aqiValue}
         aqiLabel={currentData.aqiLabel}
         exposureScore={currentData.exposureScore}
         exposureLabel={currentData.exposureLabel}
+        cigaretteEquivalent={currentData.cigaretteEquivalent}
         onFetch={handleFetch}
       />
 
       {/* ── Section 2: Decision Strip ────────────────── */}
-      {/* CHANGE 2: exposureScore removed — now lives in hero */}
       <DecisionStrip
         riskLevel={currentData.riskLevel}
         action={currentData.nextBestAction?.message || "No action available"}
@@ -567,6 +590,24 @@ export default function Dashboard({userId, onLogout}) {
         labels={trendLabels.length ? trendLabels : ["Now"]}
         sevClass={sevClass}
       />
+
+      <div className="dashboard-links-grid">
+        <Link to="/recommendations" className="dashboard-link-card">
+          <span className="dashboard-link-label">Action Plan</span>
+          <strong>View full recommendations</strong>
+          <p>
+            See personalized actions based on your current AQI, exposure score, and health profile.
+          </p>
+        </Link>
+
+        <Link to="/aqi-info" className="dashboard-link-card">
+          <span className="dashboard-link-label">AQI Guide</span>
+          <strong>Learn and check any city</strong>
+          <p>
+            Understand AQI levels, pollutants, and search live air quality for another location.
+          </p>
+        </Link>
+      </div>
 
     </main>
   );

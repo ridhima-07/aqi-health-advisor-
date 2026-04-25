@@ -8,6 +8,10 @@ import Recommendations from "./pages/Recommendations";
 function App() {
   const [userId, setUserId] = useState(() => localStorage.getItem("userId") || null);
 
+  function handleLogout() {
+    setUserId(null);
+  }
+
   useEffect(() => {
     if (userId) {
       localStorage.setItem("userId", userId);
@@ -34,7 +38,7 @@ function App() {
           path="/dashboard"
           element={
             userId ? (
-              <Dashboard userId={userId} onLogout={() => setUserId(null)} />
+              <Dashboard userId={userId} onLogout={handleLogout} />
             ) : (
               <Navigate to="/" replace />
             )
@@ -43,14 +47,14 @@ function App() {
 
         <Route
           path="/aqi-info"
-          element={<AqiInfo />}
+          element={<AqiInfo userId={userId} onLogout={handleLogout}/>}
         />
 
         <Route
           path="/recommendations"
           element={
             userId ? (
-              <Recommendations userId={userId} onLogout={()=> setUserId(null)}/>
+              <Recommendations userId={userId} onLogout={handleLogout}/>
             ) : (
               <Navigate to="/" replace />
             )
