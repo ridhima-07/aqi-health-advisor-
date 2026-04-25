@@ -1,10 +1,39 @@
 import {getLocationByID} from "../queries/locations.js";
 import { getApi, getAqiLabel, getAqiBandLabel } from "../utils/aqiUtils.js";
 import { geocodeCity } from "./geoCodingServices.js";
-import { addAqiReading } from "../queries/aqi.js";
+import { addAqiReading, getLatestAqiReadingByLocationID } from "../queries/aqi.js";
 import { calcAQINumber } from "../utils/aqiNumberUtils.js";
 
-export async function fetchAqi ( location_id )
+export async function getLatestAqi(location_id) {
+  const latest = await getLatestAqiReadingByLocationID(location_id);
+
+  if (!latest) {
+    return null;
+  }
+
+  const pollutants = {
+    co: latest.co,
+    no2: latest.no2,
+    o3: latest.o3,
+    so2: latest.so2,
+    pm2_5: latest.pm2_5,
+    pm10: latest.pm10,
+    nh3: latest.nh3,
+  };
+
+  const aqiCalc = calcAQINumber(pollutants);
+
+  return {
+    id: latest.id,
+    aqi_level: latest.aqi_level,
+    aqiValue: aqiCalc.aqiValue,
+    dominantPollutant: aqiCalc.dominantPollutant,
+    pollutants,
+    fetchedAt: latest.created_at,
+  };
+}
+
+export async function fetchAndStoreLatestAqi ( location_id )
 {
     const location = await getLocationByID(location_id);
     if (!location) return null;

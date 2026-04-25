@@ -3,8 +3,9 @@ import { getHealthProfileByUserID } from "../queries/health.js";
 import { getLatestLocationByUserID } from "../queries/locations.js";
 import { getAqiLabel, calculateRiskLevel } from "../utils/aqiUtils.js";
 import { calcExposureScore, calcExposureLabel } from "../utils/exposureUtils.js";
-import { fetchAqi } from "../services/aqiServices.js";
+import { fetchAndStoreLatestAqi, getLatestAqi } from "../services/aqiServices.js";
 import { getAqiReadingsByLocationID } from "../queries/aqi.js";
+import { calcAQINumber } from "../utils/aqiNumberUtils.js";
 
 function getCigaretteEquivalent(aqi) {
   if (aqi <= 50) return "0 cigarettes";
@@ -25,12 +26,39 @@ export async function dashboardData (user_id)
         if (!location) return null;
         const location_id = location.id;
 
-        const live_aqi = await fetchAqi(location_id);
-        if (!live_aqi) return null;
+        let live_aqi = await getLatestAqi(location_id);
+
+        if (!live_aqi) {
+        live_aqi = await fetchAndStoreLatestAqi(location_id);
+        }
 
         const cigaretteEquivalent = getCigaretteEquivalent(live_aqi?.aqiValue || 0);
 
         const aqis = await getAqiReadingsByLocationID(location_id);
+
+        const normalizedAqiHistory = aqis.map((item) => {
+        const pollutants = {
+            co: item.co,
+            no2: item.no2,
+            o3: item.o3,
+            so2: item.so2,
+            pm2_5: item.pm2_5,
+            pm10: item.pm10,
+            nh3: item.nh3,
+        };
+
+        const aqiCalc = calcAQINumber(pollutants);
+
+        return {
+            id: item.id,
+            aqi_level: item.aqi_level,
+            aqiValue: aqiCalc.aqiValue,
+            dominantPollutant: aqiCalc.dominantPollutant,
+            pollutants,
+            fetchedAt: item.created_at,
+        };
+        });
+
         const aqiLabel = getAqiLabel (live_aqi.aqi_level);
         const riskLevel = calculateRiskLevel (live_aqi.aqi_level, health_profile);
         const exp_score = calcExposureScore (live_aqi.aqi_level, health_profile);
@@ -44,7 +72,7 @@ export async function dashboardData (user_id)
                     riskLevel: riskLevel,
                     exposureScore: exp_score,
                     exposureLabel: exp_label,
-                    aqiHistory: aqis});
+                    aqiHistory: normalizedAqiHistory});
     } catch (error) {
         console.log(error);
         return null;

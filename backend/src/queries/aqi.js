@@ -7,11 +7,24 @@ export async function addAqiReading ( location_id, aqi_level, co, no2, o3, so2, 
     return newAqiReading;
 };
 
-export async function getAqiReadingsByLocationID ( location_id )
-{
-    const [aqiReadingByLocationID] = await pool.query(`SELECT * FROM aqi_readings WHERE location_id = ? ORDER BY created_at DESC`, [location_id]);
-    return aqiReadingByLocationID;
-};
+export async function getAqiReadingsByLocationID(location_id) {
+  const [aqiReadingByLocationID] = await pool.query(
+    `
+    SELECT *
+    FROM (
+      SELECT *
+      FROM aqi_readings
+      WHERE location_id = ?
+      ORDER BY created_at DESC
+      LIMIT 8
+    ) latest
+    ORDER BY created_at ASC
+    `,
+    [location_id]
+  );
+
+  return aqiReadingByLocationID;
+}
 
 export async function getLatestAqiReadingByLocationID (location_id)
 {
