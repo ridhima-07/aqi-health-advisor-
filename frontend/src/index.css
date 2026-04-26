@@ -1,0 +1,18 @@
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  background: #222831;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100vh;
+  background: #222831;
+}

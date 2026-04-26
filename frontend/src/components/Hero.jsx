@@ -271,7 +271,6 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
         onLoginSuccess(userId);
       }
     } catch (err) {
-      console.error(err);
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -694,7 +693,6 @@ export default function Hero({ onComplete, onLoginSuccess }) {
       }
 
     } catch (err) {
-      console.error(err);
       setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);

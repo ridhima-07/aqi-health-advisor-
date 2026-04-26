@@ -455,7 +455,7 @@
 
 /* ════════════════════════════════════════════════════════════
    AUTH SECTION (NEW)
-   Sign Up / Login entry point — shown below the hero.
+   Sign Up / Login entry point 
 ════════════════════════════════════════════════════════════ */
 .auth-section {
   background: var(--section);
@@ -468,8 +468,6 @@
   margin: 0 auto 36px;
   text-align: center;
 }
-
-/* Reuse setup-eyebrow / setup-heading / setup-subheading styles */
 
 /* Auth panel card */
 .auth-panel {

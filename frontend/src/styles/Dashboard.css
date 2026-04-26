@@ -4,7 +4,6 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ─── Severity Tokens ────────────────────────────── */
-/* One class on .dashboard themes the entire page */
 .sev-good     { --sev: #4ade80; --sev-dim: rgba(74,222,128,0.10); --sev-label: #166534; }
 .sev-fair     { --sev: #facc15; --sev-dim: rgba(250,204,21,0.10);  --sev-label: #854d0e; }
 .sev-moderate { --sev: #fb923c; --sev-dim: rgba(251,146,60,0.10);  --sev-label: #9a3412; }
@@ -30,20 +29,6 @@
   font-size: 14px;
   color: #9BA4B5;
   font-weight: 400;
-}
-
-.dashboard-page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: -2px;
-}
-
-.dashboard-page-title {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #EEEEEE;
 }
 
 .logout-btn {
@@ -77,7 +62,7 @@
   padding: 20px 24px 40px;
   display: flex;
   flex-direction: column;
-  gap: 18px;                 /* CHANGE 6 — was 14px, more breathing room between sections */
+  gap: 18px;                
 }
 
 /* ════════════════════════════════════════════════════
@@ -88,7 +73,7 @@
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--sev, #fb923c) 55%, transparent);
-  padding: 30px 34px 30px;   /* CHANGE 3 — was 20px 28px 22px, more breathing space */
+  padding: 30px 34px 30px;   
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -99,7 +84,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 22px;       /* CHANGE 3 — was 18px */
+  margin-bottom: 22px;       
   gap: 12px;
 }
 
@@ -160,6 +145,16 @@
   flex-shrink: 0;
 }
 
+.fetch-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.fetch-btn:disabled svg {
+  opacity: 0.7;
+}
+
 /* AQI primary display */
 .hero-aqi {
   display: flex;
@@ -188,21 +183,26 @@
 }
 
 .aqi-label {
-  font-size: 14px;           /* was 20px — reduced so number dominates */
-  font-weight: 600;          /* was 700 — slightly lighter */
+  font-size: 14px;           
+  font-weight: 600;          
   color: var(--sev, #fb923c);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  opacity: 0.62;             /* was 0.9 — clearly secondary now */
+  opacity: 0.62;             
   transition: color 0.3s;
+}
+.dominant {
+  font-size: 13px;
+  color: #9BA4B5;
+  margin-top: 6px;
 }
 
 .aqi-standard {
-  font-size: 11px;           /* was 12px */
+  font-size: 11px;           
   color: #9BA4B5;
   font-weight: 400;
   letter-spacing: 0.02em;
-  opacity: 0.7;              /* added — further de-emphasised */
+  opacity: 0.7;              
 }
 
 .aqi-fact {
@@ -215,7 +215,6 @@
   max-width: 420px;
 }
 
-/* ── CHANGE 2: Hero right column — fetch btn top, ring below ── */
 .hero-right-col {
   width: 280px;
   min-width: 280px;
@@ -228,7 +227,6 @@
   border-left: 1px solid rgba(255,255,255,0.05);
 }
 
-/* ── CHANGE 1 + 2: Hero body — AQI left, right column vertical stack ── */
 .hero-body {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) 280px;
@@ -243,7 +241,6 @@
   min-width: 0;
 }
 
-/* ── CHANGE 2: Hero right — vertical stack: button on top, ring below ── */
 .hero-exposure {
   width: 100%;
   min-height: 270px;
@@ -254,15 +251,14 @@
   gap: 18px;
 }
 
-/* CHANGE 2 — ring increased ~12%: 120px → 136px */
 .exposure-ring-wrap {
   position: relative;
-  width: 176px;              /* was 120px */
+  width: 176px;              
   height: 176px;
 }
 
 .exposure-ring-svg {
-  width: 176px;              /* was 120px */
+  width: 176px;              
   height: 176px;
 }
 
@@ -277,7 +273,7 @@
 }
 
 .exposure-ring-score {
-  font-size: 42px;           /* was 32px — scales with larger ring */
+  font-size: 42px;           
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
@@ -319,7 +315,6 @@
   transition: color 0.3s;
 }
 
-/* ── CHANGE 3: "View all recommendations" link ─────────── */
 .view-all-link {
   display: inline-block;
   margin-top: 7px;
@@ -334,7 +329,6 @@
   color: var(--sev, #fb923c);
 }
 
-/* ── CHANGE 4: Bold action word in advisory ────────────── */
 .advisory-keyword {
   font-weight: 700;
   color: #EEEEEE;
@@ -403,13 +397,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;                  /* CHANGE 4 — was 3px */
-  padding: 22px 30px;        /* CHANGE 4 — was 14px 24px, more vertical + horizontal */
+  gap: 5px;                  
+  padding: 22px 30px;        
 }
 
-/* CHANGE 4 — subtler divider */
 .strip-item + .strip-item {
-  border-left: 1px solid rgba(255,255,255,0.04);  /* was 0.06 */
+  border-left: 1px solid rgba(255,255,255,0.04);  
 }
 
 .strip-label {
@@ -420,7 +413,6 @@
   text-transform: uppercase;
 }
 
-/* CHANGE 4 — Risk Level: slightly smaller to de-emphasise */
 .strip-value {
   font-size: 21px;
   font-weight: 700;
@@ -431,7 +423,6 @@
   transition: color 0.3s;
 }
 
-/* CHANGE 4 — Best Action: more prominent than Risk Level */
 .strip-item--action .strip-value {
   font-size: 20px;
   font-weight: 700;
@@ -449,7 +440,7 @@
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;                 /* CHANGE 6 — was 14px */
+  gap: 18px;                 
 }
 
 /* Shared panel shell */
@@ -477,7 +468,7 @@
 .advisory-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;                 /* CHANGE 5 — was 10px, more breathing room */
+  gap: 14px;                 
   list-style: none;
 }
 
@@ -487,7 +478,7 @@
   gap: 10px;
   font-size: 13px;
   color: #C2CAD6;
-  line-height: 1.65;         /* CHANGE 5 — was 1.5, slightly more airy */
+  line-height: 1.65;         
 }
 
 .advisory-dot {
@@ -573,7 +564,7 @@
 .fill-poor     { background: #f87171; }
 
 /* ════════════════════════════════════════════════════
-   SECTION 4 — TREND (optional, below content)
+   SECTION 4 — TREND 
    ════════════════════════════════════════════════════ */
 .trend-panel {
   background: #252b36;

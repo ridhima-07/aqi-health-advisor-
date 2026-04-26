@@ -9,7 +9,7 @@
 //   5. Who Should Be Careful
 //   6. Real-World Impact (Did You Know)
 //   7. How AQI IQ Helps
-//   8. Check AQI Anywhere (placeholder UI)
+//   8. Check AQI Anywhere 
 // ============================================================
 
 import "../styles/AqiInfo.css";
@@ -201,7 +201,6 @@ export default function AqiInfo({ userId, onLogout }) {
             const result = await getAqiByCity(city.trim());
             setAqiData(result.data);
         } catch (err) {
-            console.error(err);
             setError("Could not fetch AQI for that location.");
         } finally {
             setLoading(false);
@@ -212,7 +211,7 @@ export default function AqiInfo({ userId, onLogout }) {
     <div className="ai-root">
         <Navbar userId={userId} onLogout={onLogout} />
         {/* ══════════════════════════════════════════════════
-          1. CHECK AQI ANYWHERE (placeholder)
+          1. CHECK AQI ANYWHERE 
       ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-section--alt ai-cta-section">
         <div className="ai-container">
@@ -272,12 +271,14 @@ export default function AqiInfo({ userId, onLogout }) {
                     </p>
                 )}
 
-                <div className="ai-search-pill ai-search-pill--moderate">PM2.5: {aqiData.pollutants.pm2_5}</div>
-                <div className="ai-search-pill ai-search-pill--moderate">PM10: {aqiData.pollutants.pm10}</div>
-                <div className="ai-search-pill ai-search-pill--fair">NO₂: {aqiData.pollutants.no2}</div>
-                <div className="ai-search-pill ai-search-pill--fair">O₃: {aqiData.pollutants.o3}</div>
-                <div className="ai-search-pill ai-search-pill--good">CO: {aqiData.pollutants.co}</div>
-                <div className="ai-search-pill ai-search-pill--good">SO₂: {aqiData.pollutants.so2}</div>
+                <div className="ai-search-pollutants">
+                  <div className="ai-search-pill ai-search-pill--moderate">PM2.5: {aqiData.pollutants.pm2_5}</div>
+                  <div className="ai-search-pill ai-search-pill--moderate">PM10: {aqiData.pollutants.pm10}</div>
+                  <div className="ai-search-pill ai-search-pill--fair">NO₂: {aqiData.pollutants.no2}</div>
+                  <div className="ai-search-pill ai-search-pill--fair">O₃: {aqiData.pollutants.o3}</div>
+                  <div className="ai-search-pill ai-search-pill--good">CO: {(aqiData.pollutants.co / 1000).toFixed(3)} mg/m³</div>
+                  <div className="ai-search-pill ai-search-pill--good">SO₂: {aqiData.pollutants.so2}</div>
+                </div>
                 </div>
             )}
             </div>

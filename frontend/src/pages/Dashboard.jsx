@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { getDashboardData, fetchLatestAqi } from "../services/dashboardService";
 import "../styles/Dashboard.css";
@@ -47,7 +47,7 @@ function RefreshIcon() {
 }
 
 function ExposureRing({ score, label }) {
-  const RADIUS = 51;                        // was 44 — scaled for 136px container
+  const RADIUS = 51;                        
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
   const dashOffset = CIRCUMFERENCE * (1 - score / 100);
 
@@ -56,7 +56,7 @@ function ExposureRing({ score, label }) {
       <div className="exposure-ring-wrap">
         <svg
           className="exposure-ring-svg"
-          viewBox="0 0 136 136"              /* was 104 104 */
+          viewBox="0 0 136 136"              
           aria-hidden="true"
         >
           <defs>
@@ -70,10 +70,10 @@ function ExposureRing({ score, label }) {
           </defs>
           {/* Track */}
           <circle
-            cx="68" cy="68" r={RADIUS}     /* was cx/cy 52 */
+            cx="68" cy="68" r={RADIUS}     
             fill="none"
             stroke="rgba(255,255,255,0.07)"
-            strokeWidth="8.5"              /* was 7 — thicker stroke */
+            strokeWidth="8.5"              
           />
           {/* Progress arc */}
           <circle
@@ -84,7 +84,7 @@ function ExposureRing({ score, label }) {
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={dashOffset}
-            transform="rotate(-90 68 68)"  /* was rotate(-90 52 52) */
+            transform="rotate(-90 68 68)"  
             filter="url(#exp-glow)"
           />
         </svg>
@@ -106,22 +106,31 @@ function ExposureRing({ score, label }) {
 }
 
 // ─── Section 1: Hero ───────────────────────────────────────────────────────
-function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposureLabel, cigaretteEquivalent, onFetch }) {
+function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposureLabel, cigaretteEquivalent, onFetch, fetching, dominantPollutant }) {
   const thumbLeft = aqiToPercent(aqiValue);
+
+  const pollutantMap = {
+    pm2_5: "PM2.5",
+    pm10: "PM10",
+    no2: "NO₂",
+    o3: "O₃",
+    co: "CO",
+    so2: "SO₂",
+  };
 
   return (
     <section className="hero" aria-label="Current AQI">
 
-      {/* Top bar — location only (fetch btn moved to right column) */}
+      {/* Top bar */}
       <div className="hero-bar">
         <div className="hero-location-group">
           <span className="hero-location">{location}</span>
           <span className="hero-updated">{updatedAt}</span>
         </div>
 
-        <button className="fetch-btn" onClick={onFetch} aria-label="Fetch latest AQI">
+        <button className="fetch-btn" onClick={onFetch} disabled={fetching} aria-label="Fetch latest AQI">
           <RefreshIcon />
-          Fetch Latest
+          {fetching ? "Fetching..." : "Fetch Latest"}
         </button>
       </div>
 
@@ -137,6 +146,12 @@ function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposure
             <div className="aqi-label-group">
               <span className="aqi-label">{aqiLabel}</span>
             </div>
+            {dominantPollutant && (
+              <p className="dominant">
+                Dominant pollutant:{" "}
+                {pollutantMap[dominantPollutant] || dominantPollutant}
+              </p>
+            )}
           </div>
 
           <div className="aqi-scale">
@@ -243,7 +258,12 @@ function PollutantBreakdown({ pollutants }) {
             <div className="pollutant-header">
               <span className="pollutant-name">{p.name}</span>
               <div className="pollutant-meta">
-                <span className="pollutant-value">{p.value} {p.unit}</span>
+                <span className="pollutant-value">
+                  {p.key === "co"
+                    ? (p.value / 1000).toFixed(3)
+                    : p.value?.toFixed(2)}{" "}
+                  {p.unit}
+                </span>
                 <span className={`pollutant-badge badge-${p.level}`}>{p.level}</span>
               </div>
             </div>
@@ -265,7 +285,7 @@ function PollutantBreakdown({ pollutants }) {
 }
 
 // ─── Section 4: Trend Sparkline ────────────────────────────────────────────
-function TrendPanel({ values, labels, sevClass }) {
+function TrendPanel({ values, labels }) {
   // Map values (0–500 scale) to SVG Y coordinates (72px tall, reversed)
   const W = 800;
   const H = 72;
@@ -368,12 +388,12 @@ function TrendPanel({ values, labels, sevClass }) {
 
 // ─── Dashboard (root export) ───────────────────────────────────────────────
 export default function Dashboard({userId, onLogout}) {
-  // const sevClass = severityClass(DATA.aqiValue);
 
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [aqiHistory, setAqiHistory] = useState([]);
+  const [fetching, setFetching] = useState(false);
 
   const currentData = dashboardData || null;
 
@@ -386,7 +406,6 @@ export default function Dashboard({userId, onLogout}) {
         const result = await getDashboardData(userId);
         setDashboardData(result.data);
       } catch (err) {
-        console.error(err);
         setError("Failed to load dashboard data.");
       } finally {
         setLoading(false);
@@ -407,7 +426,7 @@ export default function Dashboard({userId, onLogout}) {
       setAqiHistory(
         backendHistory.slice(-8).map((item) => ({
           label: formatTrendTime(item.fetchedAt || item.created_at || item.timestamp),
-          value: item.aqiValue || item.aqi_value || item.aqi_level || 0,
+          value: item.aqiValue || item.aqi_value || 0,
         }))
       );
     } else if (currentData.aqi?.aqiValue) {
@@ -422,8 +441,9 @@ export default function Dashboard({userId, onLogout}) {
 
   async function handleFetch() {
     try {
-      if (!dashboardData?.location?.id) return;
+      if (!dashboardData?.location?.id || fetching) return;
 
+      setFetching(true);
       setError("");
 
       await fetchLatestAqi(dashboardData.location.id);
@@ -431,8 +451,9 @@ export default function Dashboard({userId, onLogout}) {
       const refreshed = await getDashboardData(dashboardData.user.id);
       setDashboardData(refreshed.data);
     } catch (err) {
-      console.error(err);
       setError("Failed to fetch latest AQI.");
+    } finally {
+      setFetching(false);
     }
   }
 
@@ -477,6 +498,7 @@ export default function Dashboard({userId, onLogout}) {
 
   const trendValues = effectiveHistory.map((item) => item.value);
   const trendLabels = effectiveHistory.map((item) => item.label);
+  const coMg = currentData.aqi.pollutants.co / 1000;
 
   const sevClass = currentData?.aqi?.aqiValue
   ? severityClass(currentData.aqi.aqiValue)
@@ -484,6 +506,7 @@ export default function Dashboard({userId, onLogout}) {
 
   const pollutantData = [
           {
+            key: "pm2_5",
             name: "PM2.5",
             value: currentData.aqi.pollutants.pm2_5,
             unit: "µg/m³",
@@ -496,6 +519,7 @@ export default function Dashboard({userId, onLogout}) {
                 : "moderate",
           },
           {
+            key: "pm10",
             name: "PM10",
             value: currentData.aqi.pollutants.pm10,
             unit: "µg/m³",
@@ -508,6 +532,7 @@ export default function Dashboard({userId, onLogout}) {
                 : "moderate",
           },
           {
+            key: "no2",
             name: "NO₂",
             value: currentData.aqi.pollutants.no2,
             unit: "µg/m³",
@@ -520,6 +545,7 @@ export default function Dashboard({userId, onLogout}) {
                 : "moderate",
           },
           {
+            key: "o3",
             name: "O₃",
             value: currentData.aqi.pollutants.o3,
             unit: "µg/m³",
@@ -532,14 +558,15 @@ export default function Dashboard({userId, onLogout}) {
                 : "moderate",
           },
           {
+            key: "co",
             name: "CO",
             value: currentData.aqi.pollutants.co,
-            unit: "µg/m³",
-            pct: Math.min((currentData.aqi.pollutants.co / 10) * 100, 100),
+            unit: "mg/m³",
+            pct: Math.min((coMg / 10) * 100, 100),
             level:
-              currentData.aqi.pollutants.co <= 2
+              coMg <= 2
                 ? "good"
-                : currentData.aqi.pollutants.co <= 6
+                : coMg <= 6
                 ? "fair"
                 : "moderate",
           },
@@ -565,7 +592,9 @@ export default function Dashboard({userId, onLogout}) {
         exposureScore={currentData.exposureScore}
         exposureLabel={currentData.exposureLabel}
         cigaretteEquivalent={currentData.cigaretteEquivalent}
+        dominantPollutant={dashboardData?.aqi?.dominantPollutant}
         onFetch={handleFetch}
+        fetching={fetching}
       />
 
       {/* ── Section 2: Decision Strip ────────────────── */}
@@ -588,7 +617,6 @@ export default function Dashboard({userId, onLogout}) {
       <TrendPanel
         values={trendValues.length ? trendValues : [0]}
         labels={trendLabels.length ? trendLabels : ["Now"]}
-        sevClass={sevClass}
       />
 
       <div className="dashboard-links-grid">

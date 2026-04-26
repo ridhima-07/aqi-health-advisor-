@@ -65,11 +65,6 @@ function normalizeCategory(category) {
   }
 }
 
-
-
-// Derive structured recommendations from healthAdvisory.doNext
-// Used until backend returns a proper recommendations[] array.
-// Remove once backend sends { recommendations: [...] }
 function deriveRecommendations(healthAdvisory, aqiValue) {
   const items = healthAdvisory?.doNext ?? [];
   return items.map((message, i) => ({
@@ -79,7 +74,7 @@ function deriveRecommendations(healthAdvisory, aqiValue) {
   }));
 }
 
-// Insight paragraph — human tone, tuned to severity
+// Insight paragraph 
 function buildInsight(aqiValue, city) {
   const place = city || "your area";
   if (aqiValue <= 50)
@@ -151,7 +146,7 @@ function RecCard({ item, index }) {
   );
 }
 
-// Compact priority breakdown shown in the feed header
+// Compact priority breakdown 
 function PriorityBreakdown({ items }) {
   const counts = items.reduce((acc, r) => {
     const key = normalizePriority(r.priority);
@@ -198,7 +193,6 @@ export default function Recommendations({ userId, onLogout }) {
         const result = await getDashboardData(userId);
         setData(result.data);
       } catch (err) {
-        console.error(err);
         setError("Could not load recommendations. Please try again.");
       } finally {
         setLoading(false);
@@ -251,7 +245,6 @@ export default function Recommendations({ userId, onLogout }) {
   const color       = aqiColor(aqiValue);
   const insight     = buildInsight(aqiValue, city);
 
-  // Use backend recommendations[] when available; fallback to derived list
   const rawRecs =
     Array.isArray(data.recommendations) && data.recommendations.length > 0
       ? data.recommendations
@@ -265,7 +258,7 @@ export default function Recommendations({ userId, onLogout }) {
 
       <div className="rec-shell">
 
-        {/* Page title — mirrors dashboard-page-header style */}
+        {/* Page title */}
         <header className="rec-page-header">
           <h1 className="rec-page-title">RECOMMENDATIONS</h1>
         </header>
