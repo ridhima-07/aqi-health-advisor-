@@ -1,7 +1,7 @@
 import { getUserByID } from "../queries/users.js";
 import { getHealthProfileByUserID } from "../queries/health.js";
 import { getLatestLocationByUserID } from "../queries/locations.js";
-import { getAqiLabel, calculateRiskLevel } from "../utils/aqiUtils.js";
+import { getAqiLabel, getAqiBandLabel, calculateRiskLevel } from "../utils/aqiUtils.js";
 import { calcExposureScore, calcExposureLabel } from "../utils/exposureUtils.js";
 import { fetchAndStoreLatestAqi, getLatestAqi } from "../services/aqiServices.js";
 import { getAqiReadingsByLocationID } from "../queries/aqi.js";
@@ -37,7 +37,7 @@ export async function dashboardData (user_id)
         const aqis = await getAqiReadingsByLocationID(location_id);
 
         const normalizedAqiHistory = aqis.map((item) => {
-        const pollutants = {
+        const rawPollutants = {
             co: item.co,
             no2: item.no2,
             o3: item.o3,
@@ -45,23 +45,28 @@ export async function dashboardData (user_id)
             pm2_5: item.pm2_5,
             pm10: item.pm10,
             nh3: item.nh3,
-        };
+            };
 
-        const aqiCalc = calcAQINumber(pollutants);
+        const pollutantsForCalc = {
+            ...rawPollutants,
+            co: rawPollutants.co / 1000,
+            };
+
+        const aqiCalc = calcAQINumber(pollutantsForCalc);
 
         return {
             id: item.id,
             aqi_level: item.aqi_level,
             aqiValue: aqiCalc.aqiValue,
             dominantPollutant: aqiCalc.dominantPollutant,
-            pollutants,
+            pollutants: rawPollutants,
             fetchedAt: item.created_at,
-        };
+            };
         });
 
-        const aqiLabel = getAqiLabel (live_aqi.aqi_level);
-        const riskLevel = calculateRiskLevel (live_aqi.aqi_level, health_profile);
-        const exp_score = calcExposureScore (live_aqi.aqi_level, health_profile);
+        const aqiLabel = getAqiBandLabel (live_aqi.aqiValue);
+        const riskLevel = calculateRiskLevel(live_aqi.aqiValue, health_profile);
+        const exp_score = calcExposureScore(live_aqi.aqiValue, health_profile);
         const exp_label = calcExposureLabel (exp_score);
         return(     {user: user,
                     healthProfile: health_profile,

@@ -1,27 +1,22 @@
-export function aqiBase(aqi_level) {
-    switch (aqi_level) {
-        case 1: return 10;
-        case 2: return 25;
-        case 3: return 45;
-        case 4: return 70;
-        case 5: return 90;
-        default: return 0;
-    }
+export function aqiBase(aqiValue) {
+  if (aqiValue <= 50) return 10;
+  if (aqiValue <= 100) return 25;
+  if (aqiValue <= 150) return 45;
+  if (aqiValue <= 200) return 65;
+  if (aqiValue <= 300) return 82;
+  return 92;
 }
 
-export function calcExposureScore(aqi_level, health_profile) {
-    let score2 = 0;
+export function calcExposureScore(aqiValue, health_profile) {
+  let profileScore = 0;
 
-    if (health_profile.isSmoker) score2 += 10;
-    if (health_profile.hasAllergy) score2 += 5;
-    if (health_profile.hasAsthma) score2 += 15;
-    if (health_profile.hasHeartCondition) score2 += 15;
-    if (health_profile.hasCOPD) score2 += 20;
+  if (health_profile.isSmoker) profileScore += 10;
+  if (health_profile.hasAllergy) profileScore += 5;
+  if (health_profile.hasAsthma) profileScore += 15;
+  if (health_profile.hasHeartCondition) profileScore += 15;
+  if (health_profile.hasCOPD) profileScore += 20;
 
-    let exp_score = aqiBase(aqi_level) + score2;
-    if (exp_score > 100) exp_score = 100;
-
-    return exp_score;
+  return Math.min(100, aqiBase(aqiValue) + profileScore);
 }
 
 export function calcExposureLabel(exp_score) {

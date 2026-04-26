@@ -23,25 +23,27 @@ export function  getAqiBandLabel(aqiValue) {
   return "Hazardous";
 }
 
-export function calculateRiskLevel ( aqiLevel, healthProfile )
-{
-    let score = aqiLevel - 1;
-    if ( healthProfile.isSmoker ) score += 1;
-    if ( healthProfile.hasAllergy ) score += 1;
-    if ( healthProfile.hasHeartCondition ) score += 2;
-    if ( healthProfile.hasAsthma ) score += 2;
-    if ( healthProfile.hasCOPD ) score += 3;
-    
-    if ( score>=0 && score<=2 )
-        return "LOW";
-    else if ( score>=3 && score<=5 )
-        return "MODERATE";
-    else if ( score>=6 && score<=8 )
-        return "HIGH";
-    else if ( score>=9 )
-        return "SEVERE";
-    return "UNKNOWN";
-};
+export function calculateRiskLevel(aqiValue, healthProfile) {
+  let score = 0;
+
+  if (aqiValue <= 50) score += 0;
+  else if (aqiValue <= 100) score += 1;
+  else if (aqiValue <= 150) score += 2;
+  else if (aqiValue <= 200) score += 3;
+  else if (aqiValue <= 300) score += 4;
+  else score += 5;
+
+  if (healthProfile.isSmoker) score += 1;
+  if (healthProfile.hasAllergy) score += 1;
+  if (healthProfile.hasHeartCondition) score += 2;
+  if (healthProfile.hasAsthma) score += 2;
+  if (healthProfile.hasCOPD) score += 3;
+
+  if (score <= 2) return "LOW";
+  if (score <= 5) return "MODERATE";
+  if (score <= 8) return "HIGH";
+  return "SEVERE";
+}
 
 export async function getApi (lat, lon) {
     try {

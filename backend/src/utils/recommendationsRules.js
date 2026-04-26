@@ -4,7 +4,7 @@ export const recommendationRules = [
     id: "AQI_HIGH_GENERAL",
     priority: 10,
     category: "general",
-    condition: (ctx) => ctx.aqi_level >= 4,
+    condition: (ctx) => ctx.aqiValue > 150,
     message: (ctx) => `Air quality is ${ctx.aqi_label}. Avoid outdoor activity if possible.`
   },
 
@@ -12,7 +12,7 @@ export const recommendationRules = [
     id: "ASTHMA_ALERT",
     priority: 10,
     category: "health_profile",
-    condition: (ctx) => ctx.health_profile.hasAsthma && ctx.aqi_level >= 3,
+    condition: (ctx) => ctx.health_profile.hasAsthma && ctx.aqiValue > 100,
     message: () => "Asthma risk is higher today. Carry your inhaler and avoid outdoor exertion."
   },
 
@@ -20,7 +20,7 @@ export const recommendationRules = [
     id: "COPD_ALERT",
     priority: 10,
     category: "health_profile",
-    condition: (ctx) => ctx.health_profile.hasCOPD && ctx.aqi_level >= 3,
+    condition: (ctx) => ctx.health_profile.hasCOPD && ctx.aqiValue > 100,
     message: () => "COPD risk is higher today. Avoid outdoor exposure and stay indoors if possible."
   },
 
@@ -28,7 +28,7 @@ export const recommendationRules = [
     id: "HEART_ALERT",
     priority: 9,
     category: "health_profile",
-    condition: (ctx) => ctx.health_profile.hasHeartCondition && ctx.aqi_level >= 3,
+    condition: (ctx) => ctx.health_profile.hasHeartCondition && ctx.aqiValue > 100,
     message: () => "Heart condition risk is higher today. Avoid stress, heavy walking, and polluted areas."
   },
 
@@ -36,7 +36,7 @@ export const recommendationRules = [
     id: "SMOKER_ALERT",
     priority: 8,
     category: "health_profile",
-    condition: (ctx) => ctx.health_profile.isSmoker && ctx.aqi_level >= 3,
+    condition: (ctx) => ctx.health_profile.isSmoker && ctx.aqiValue > 100,
     message: () => "Avoid smoking outdoors today. Pollution + smoking increases respiratory strain."
   },
 
@@ -76,7 +76,7 @@ export const recommendationRules = [
     id: "SAFE_DAY",
     priority: 3,
     category: "general",
-    condition: (ctx) => ctx.aqi_level <= 2,
+    condition: (ctx) => ctx.aqiValue <= 100,
     message: () => "Air quality is good today. Outdoor activity is generally safe."
   }
 ];

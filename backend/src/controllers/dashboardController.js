@@ -21,6 +21,7 @@ export async function getDashboardData (req, res) {
             user: dashboard.user,
             health_profile: dashboard.healthProfile,
             location: dashboard.location,
+            aqiValue: dashboard.aqi.aqiValue,
             aqi_level: dashboard.aqi.aqi_level,
             aqi_label: dashboard.aqiLabel,
             pollutants: dashboard.aqi.pollutants,
