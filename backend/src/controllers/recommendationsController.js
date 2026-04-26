@@ -14,7 +14,7 @@ export async function nextBestAction (req, res)
             user: data.user,
             health_profile: data.healthProfile,
             location: data.location,
-            aqi_level: data.aqi.aqi_level,
+            aqiValue: data.aqi.aqiValue,
             aqi_label: data.aqiLabel,
             pollutants: data.aqi.pollutants,
             exp_score: data.exposureScore,
@@ -26,7 +26,6 @@ export async function nextBestAction (req, res)
 
         return res.status(200).json({success: true, data: {...ctx, nextBestAction, recommendations}});
     } catch (error) {
-        console.log(error);
         res.status(500).json({ success: false, message: "Failed to show recommendations" });
     }
 }

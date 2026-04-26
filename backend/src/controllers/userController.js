@@ -22,7 +22,6 @@ export async function completeUserProfile(req, res) {
 
     return res.status(200).json({ success: true, message: "User profile completed successfully." });
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ success: false, message: "Failed to complete user profile." });
     }
 }

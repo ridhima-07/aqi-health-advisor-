@@ -1,19 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-export function getAqiLabel ( aqiLevel )
-{
-        switch ( aqiLevel )
-        {
-            case 1: return "Good";
-            case 2: return "Fair";
-            case 3: return "Moderate";
-            case 4: return "Poor";
-            case 5: return "Very Poor";
-            default: return "Unknown";
-        }
-};
-
 export function  getAqiBandLabel(aqiValue) {
   if (aqiValue <= 50) return "Good";
   if (aqiValue <= 100) return "Fair";
@@ -51,6 +38,5 @@ export async function getApi (lat, lon) {
         const data = await response.json();
         return data;
     } catch ( error ) {
-        console.log(error);
     }
 };

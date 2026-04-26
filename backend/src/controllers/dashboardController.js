@@ -42,7 +42,6 @@ export async function getDashboardData (req, res) {
         }
         });
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ success: false, message: "Failed to fetch dashboard data" });
     }
 };

@@ -1,13 +1,8 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { fetchAndStoreLatestAqi, getLatestAqi as getLatestAqiService, fetchAqiByCity } from "../services/aqiServices.js";
 import { getAqiReadingsByLocationID } from "../queries/aqi.js";
 
 export async function fetchAQI(req, res) {
   try {
-    console.log("AQI fetch-and-store route hit");
-
     const location_id = req.params.location_id;
     const result = await fetchAndStoreLatestAqi(location_id);
 
@@ -20,7 +15,6 @@ export async function fetchAQI(req, res) {
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: "Failed to fetch AQI data." });
   }
 }
@@ -33,7 +27,6 @@ export async function getAqiHistory (req, res) {
             return res.status(404).json({success:false, message: "Aqi history not found."}) ;       
         res.status(200).json({success: true, data: aqi_history});
     } catch (error) {
-        console.log(error);
         res.status(500).json({ success: false, message: "Failed to fetch AQI history" });
     }
 };
@@ -52,7 +45,6 @@ export async function getLatestAqi(req, res) {
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: "Failed to fetch latest AQI reading" });
   }
 }
@@ -75,8 +67,6 @@ export async function getAqiByCity(req, res) {
       data: result,
     });
   } catch (error) {
-    console.log("getAqiByCity error:", error.message);
-
     if (error.message === "Location not found") {
       return res.status(404).json({
         success: false,

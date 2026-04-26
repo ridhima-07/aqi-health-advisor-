@@ -4,6 +4,8 @@ dotenv.config();
 import express from "express";
 const app = express();
 
+const PORT = process.env.PORT || 8000;
+
 import cors from "cors";
 import locationRoutes from "./routes/locationRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
@@ -24,6 +26,6 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/recommendations", recommendationRoutes);
 app.use("/auth", authRoutes);
 
-app.listen(8000, ()=>{
-    console.log("Server is running.")
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -1,7 +1,7 @@
 import { getUserByID } from "../queries/users.js";
 import { getHealthProfileByUserID } from "../queries/health.js";
 import { getLatestLocationByUserID } from "../queries/locations.js";
-import { getAqiLabel, getAqiBandLabel, calculateRiskLevel } from "../utils/aqiUtils.js";
+import { getAqiBandLabel, calculateRiskLevel } from "../utils/aqiUtils.js";
 import { calcExposureScore, calcExposureLabel } from "../utils/exposureUtils.js";
 import { fetchAndStoreLatestAqi, getLatestAqi } from "../services/aqiServices.js";
 import { getAqiReadingsByLocationID } from "../queries/aqi.js";
@@ -79,7 +79,6 @@ export async function dashboardData (user_id)
                     exposureLabel: exp_label,
                     aqiHistory: normalizedAqiHistory});
     } catch (error) {
-        console.log(error);
         return null;
     }
 }

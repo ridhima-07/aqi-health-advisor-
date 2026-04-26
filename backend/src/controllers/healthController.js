@@ -28,7 +28,6 @@ export async function createHealthProfile ( req, res )
         const newHealthProfile = await addHealthProfile(user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score);
         res.status(201).json({ success: true, message: "Health Profile Added!"}); 
     } catch(error) {
-        console.log(error);
         res.status(500).json({ success: false, message: "Failed to add health profile :(" });
     }
 };
@@ -43,7 +42,6 @@ export async function updateHealthProfile ( req, res )
             return res.status(404).json({ success: false, message: "Health Profile not found."});
         res.status(200).json({ success: true, message: "Health Profile updated successfully!"});
     } catch ( error ){
-        console.log(error);
         res.status(500).json({ success: false, message: "Failed to update health profile :("});
     }
 };

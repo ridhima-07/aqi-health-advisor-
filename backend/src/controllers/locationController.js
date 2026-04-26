@@ -17,7 +17,6 @@ export async function addNewLocation (req, res) {
         const newLocation = await addLocation( user_id, city, state, lat, lon );
         res.status(201).json({success: true, message: "Location Added!"})
     } catch ( error ) {
-        console.log(error);
         res.status(500).json({ success: false, message: "Failed to add location" });
     }
 };
@@ -32,7 +31,6 @@ export async function updateLocation (req, res)
             return res.status(404).json({ success: false, message: "Location not found."});
         res.status(200).json({ success: true, message: "Location updated successfully!"});
     } catch (error){
-        console.log(error);
         res.status(500).json({ success: false, message: "Failed to update location."});
     }
 };

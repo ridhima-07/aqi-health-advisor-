@@ -4,7 +4,6 @@ export async function addHealthProfile (user_id, isSmoker, hasHeartCondition, ha
 {
     const [newHealthProfile] = await pool.query(`INSERT into health_profiles (user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score) 
         VALUES ( ?, ?, ?, ?, ?, ?, ? ) `, [user_id, isSmoker, hasHeartCondition, hasAsthma, hasCOPD, hasAllergy, health_score]);
-        console.log("DB Insert Result:", newHealthProfile);
         return newHealthProfile;
 };
 

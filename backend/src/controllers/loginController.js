@@ -21,7 +21,6 @@ export async function login ( req, res )
         return res.status(200).json({success: true, message: "User logged in successfully!", data: {id: user.id}});
 
     } catch ( error ){
-        console.log(error);
         return res.status(500).json({success: false, message: "User could not be logged in."});
     }
 };

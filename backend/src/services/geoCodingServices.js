@@ -28,7 +28,6 @@ export async function geocodeCity(cityName) {
       state: location.state || "",
     };
   } catch (error) {
-    console.log("geocodeCity error:", error.message);
     throw error;
   }
 }

@@ -1,5 +1,5 @@
 import {getLocationByID} from "../queries/locations.js";
-import { getApi, getAqiLabel, getAqiBandLabel } from "../utils/aqiUtils.js";
+import { getApi, getAqiBandLabel } from "../utils/aqiUtils.js";
 import { geocodeCity } from "./geoCodingServices.js";
 import { addAqiReading, getLatestAqiReadingByLocationID } from "../queries/aqi.js";
 import { calcAQINumber } from "../utils/aqiNumberUtils.js";
@@ -132,7 +132,6 @@ export async function fetchAqiByCity(cityName) {
     fetchedAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.log("fetchAqiByCity error:", error.message);
     throw error;
   }
 }
