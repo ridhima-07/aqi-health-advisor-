@@ -13,9 +13,9 @@ export async function fetchAQI(req, res) {
       });
     }
 
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch AQI data." });
+    return res.status(200).json({ success: true, message: "AQI fetched successfully.", data: result });
+  } catch {
+    return res.status(500).json({ success: false, message: "Failed to fetch AQI data." });
   }
 }
 
@@ -25,9 +25,9 @@ export async function getAqiHistory (req, res) {
         const aqi_history = await getAqiReadingsByLocationID(location_id);
         if (aqi_history.length===0)
             return res.status(404).json({success:false, message: "Aqi history not found."}) ;       
-        res.status(200).json({success: true, data: aqi_history});
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to fetch AQI history" });
+        return res.status(200).json({success: true, message: "AQI history fetched successfully.", data: aqi_history});
+    } catch {
+        return res.status(500).json({ success: false, message: "Failed to fetch AQI history" });
     }
 };
 
@@ -42,41 +42,24 @@ export async function getLatestAqi(req, res) {
         message: "Latest AQI not found.",
       });
     }
-
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch latest AQI reading" });
+    return res.status(200).json({ success: true, message: "Latest AQI fetched successfully.", data: result });
+  } catch {
+    return res.status(500).json({ success: false, message: "Failed to fetch latest AQI reading" });
   }
 }
 
 export async function getAqiByCity(req, res) {
   try {
     const cityName = req.query.name;
-
     if (!cityName || !cityName.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "City name is required.",
-      });
+      return res.status(400).json({ success: false, message: "City name is required.", });
     }
-
     const result = await fetchAqiByCity(cityName.trim());
-
-    return res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return res.status(200).json({ success: true, message: "AQI fetched successfully.", data: result });
   } catch (error) {
     if (error.message === "Location not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Location not found.",
-      });
+      return res.status(404).json({ success: false, message: "Location not found." });
     }
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch AQI for this location.",
-    });
+    return res.status(500).json({ success: false, message: "Failed to fetch AQI for this location." });
   }
 }

@@ -22,7 +22,6 @@ export async function getDashboardData (req, res) {
             health_profile: dashboard.healthProfile,
             location: dashboard.location,
             aqiValue: dashboard.aqi.aqiValue,
-            aqi_level: dashboard.aqi.aqi_level,
             aqi_label: dashboard.aqiLabel,
             pollutants: dashboard.aqi.pollutants,
             exp_score: dashboard.exposureScore,
@@ -34,6 +33,7 @@ export async function getDashboardData (req, res) {
 
         return res.status(200).json({
         success: true,
+        message: "Dashboard data fetched successfully.",
         data: {
             ...dashboard,
             healthAdvisory,
@@ -41,7 +41,7 @@ export async function getDashboardData (req, res) {
             recommendations
         }
         });
-    } catch (error) {
+    } catch {
         return res.status(500).json({ success: false, message: "Failed to fetch dashboard data" });
     }
 };

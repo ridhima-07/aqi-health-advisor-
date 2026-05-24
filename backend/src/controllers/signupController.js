@@ -19,7 +19,7 @@ export async function signup ( req, res )
 
         return res.status(201).json({ success: true, message: "User signed up successfully.", data: { id: newUser.insertId } });
     }
-    catch ( error ) {
+    catch {
         return res.status(500).json({success: false, message: "Could not sign up user."});
   }
 };

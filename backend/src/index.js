@@ -15,7 +15,13 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import recommendationRoutes from "./routes/recommendationsRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 app.use("/health-profile", healthRoutes);

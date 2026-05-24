@@ -78,7 +78,7 @@ export async function dashboardData (user_id)
                     exposureScore: exp_score,
                     exposureLabel: exp_label,
                     aqiHistory: normalizedAqiHistory});
-    } catch (error) {
+    } catch {
         return null;
     }
 }

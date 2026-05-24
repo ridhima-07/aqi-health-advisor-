@@ -21,7 +21,7 @@ export async function completeUserProfile(req, res) {
       return res.status(404).json({ success: false, message: "User not found." });
 
     return res.status(200).json({ success: true, message: "User profile completed successfully." });
-    } catch (error) {
+    } catch {
         return res.status(500).json({ success: false, message: "Failed to complete user profile." });
     }
 }
@@ -35,7 +35,7 @@ export async function updateUserController (req, res)
         if (updatedUser.affectedRows===0)
             return res.status(404).json({ success: false, message: "User not found."});
         res.status(200).json({ success: true, message: "User updated successfully!"});
-    } catch (error) {
+    } catch {
         res.status(500).json({ success: false, message: "Failed to update user."});
     }
 };
@@ -44,8 +44,8 @@ export async function getAllUsers(req,res)
 {
     try {
         const users = await getUsers();
-        res.status(200).json({ success: true, data: users});
-    } catch (error) {
+        res.status(200).json({ success: true, message: "Users fetched successfully.", data: users});
+    } catch {
         res.status(500).json({ success: false, message: "Failed to fetch users."});
     }
 };
@@ -57,9 +57,9 @@ export async function getUserByIdController (req, res)
         const user = await getUserByID (id);
         if (!user) 
             return res.status(404).json({ success: false, message: "User not found."});
-        res.status(200).json({ success: true, data: user});
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to fetch user"});
+        return res.status(200).json({ success: true, message: "User fetched successfully.", data: user});
+    } catch {
+        return res.status(500).json({ success: false, message: "Failed to fetch user"});
     }
 };
 
@@ -70,9 +70,9 @@ export async function getUserByEmailController (req, res)
         const user = await getUserByEmail (email);
         if (!user) 
             return res.status(404).json({ success: false, message: "User not found."});
-        res.status(200).json({ success: true, data: user});
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to fetch user"});
+        return res.status(200).json({ success: true, message: "User fetched successfully.", data: user});
+    } catch {
+        return res.status(500).json({ success: false, message: "Failed to fetch user"});
     }
 };
 
@@ -83,8 +83,8 @@ export async function deleteUser(req, res)
         const user = await deleteUserByID(id);
         if ( user.affectedRows === 0 )
             return res.status(404).json({ success: false, message: "User not found"});
-        res.status(200).json({ success: true, message: "User deleted successfully!"});
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to delete user."});
+        return res.status(200).json({ success: true, message: "User deleted successfully!"});
+    } catch {
+        return res.status(500).json({ success: false, message: "Failed to delete user."});
     }
 }
