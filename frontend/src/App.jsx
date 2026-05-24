@@ -1,24 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import AqiInfo from "./pages/AqiInfo";
 import Recommendations from "./pages/Recommendations";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 function App() {
   const [userId, setUserId] = useState(() => localStorage.getItem("userId") || null);
 
   function handleLogout() {
+    localStorage.clear();
     setUserId(null);
   }
-
-  useEffect(() => {
-    if (userId) {
-      localStorage.setItem("userId", userId);
-    } else {
-      localStorage.removeItem("userId");
-    }
-  }, [userId]);
 
   return (
     <BrowserRouter>
@@ -28,10 +23,19 @@ function App() {
           element={
             <Home
               userId={userId}
-              onComplete={(id) => setUserId(id)}
-              onLoginSuccess={(id) => setUserId(id)}
+              onLogout={handleLogout}
             />
           }
+        />
+
+        <Route
+          path="/login"
+          element={<Login setUserId={setUserId} />}
+        />
+
+        <Route
+          path="/signup"
+          element={<Signup />}
         />
 
         <Route
@@ -40,26 +44,25 @@ function App() {
             userId ? (
               <Dashboard userId={userId} onLogout={handleLogout} />
             ) : (
-              <Navigate to="/" replace />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        <Route
-          path="/aqi-info"
-          element={<AqiInfo userId={userId} onLogout={handleLogout}/>}
-        />
+        <Route path="/aqi-info" element={<AqiInfo />} />
 
         <Route
           path="/recommendations"
           element={
             userId ? (
-              <Recommendations userId={userId} onLogout={handleLogout}/>
+              <Recommendations userId={userId} />
             ) : (
-              <Navigate to="/" replace />
+              <Navigate to="/login" replace />
             )
           }
         />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

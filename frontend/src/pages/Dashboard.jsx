@@ -4,8 +4,6 @@ import Navbar from "../components/Navbar";
 import { getDashboardData, fetchLatestAqi } from "../services/dashboardService";
 import "../styles/Dashboard.css";
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
-
 function severityClass(aqiValue) {
   if (aqiValue <= 50)  return 'sev-good';
   if (aqiValue <= 100) return 'sev-fair';
@@ -13,7 +11,6 @@ function severityClass(aqiValue) {
   return 'sev-poor';
 }
 
-// AQI 0–500 → thumb position % on the scale bar
 function aqiToPercent(value) {
   return Math.min(100, Math.max(0, (value / 500) * 100));
 }
@@ -32,8 +29,6 @@ function formatTrendTime(dateValue) {
     minute: "2-digit",
   });
 }
-
-// ─── Sub-components ────────────────────────────────────────────────────────
 
 function RefreshIcon() {
   return (
@@ -105,7 +100,6 @@ function ExposureRing({ score, label }) {
   );
 }
 
-// ─── Section 1: Hero ───────────────────────────────────────────────────────
 function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposureLabel, cigaretteEquivalent, onFetch, fetching, dominantPollutant }) {
   const thumbLeft = aqiToPercent(aqiValue);
 
@@ -134,7 +128,7 @@ function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposure
         </button>
       </div>
 
-      {/* Main body: AQI left, right vertical stack */}
+      {/* Main body */}
       <div className="hero-body">
 
         {/* Left: AQI number + scale */}
@@ -188,7 +182,6 @@ function Hero({ location, updatedAt, aqiValue, aqiLabel, exposureScore, exposure
   );
 }
 
-// ─── Section 2: Decision Strip ─────────────────────────────────────────────
 function DecisionStrip({ riskLevel, action, actionDetail }) {
   return (
     <div className="strip" role="region" aria-label="Decision summary">
@@ -213,7 +206,6 @@ function DecisionStrip({ riskLevel, action, actionDetail }) {
   );
 }
 
-
 const ACTION_WORDS = ['Avoid', 'Keep', 'Wear', 'Stay'];
 
 function BoldActionWord({ text }) {
@@ -230,7 +222,6 @@ function BoldActionWord({ text }) {
   return <>{text}</>;
 }
 
-// ─── Section 3A: Health Advisory ──────────────────────────────────────────
 function HealthAdvisory({ items }) {
   return (
     <div className="panel" id="advisory">
@@ -247,7 +238,6 @@ function HealthAdvisory({ items }) {
   );
 }
 
-// ─── Section 3B: Pollutant Breakdown ──────────────────────────────────────
 function PollutantBreakdown({ pollutants }) {
   return (
     <div className="panel">
@@ -284,9 +274,7 @@ function PollutantBreakdown({ pollutants }) {
   );
 }
 
-// ─── Section 4: Trend Sparkline ────────────────────────────────────────────
 function TrendPanel({ values, labels }) {
-  // Map values (0–500 scale) to SVG Y coordinates (72px tall, reversed)
   const W = 800;
   const H = 72;
   const PAD = 10;
@@ -312,8 +300,6 @@ function TrendPanel({ values, labels }) {
   });
 
   const polyline = points.join(' ');
-
-  // Build closed path for area fill
   const firstX = PAD;
   const lastX  = W - PAD;
   const areaPath = `M${firstX},${H} ${points.map((p) => `L${p}`).join(' ')} L${lastX},${H} Z`;
@@ -338,13 +324,10 @@ function TrendPanel({ values, labels }) {
           </linearGradient>
         </defs>
 
-        {/* Area fill */}
         <path className="trend-area" d={areaPath} />
 
-        {/* Line */}
         <polyline className="trend-line" points={polyline} />
 
-        {/* Dots at each data point */}
         {points.map((pt, i) => {
           const [x, y] = pt.split(',').map(Number);
           return (
@@ -386,7 +369,6 @@ function TrendPanel({ values, labels }) {
   );
 }
 
-// ─── Dashboard (root export) ───────────────────────────────────────────────
 export default function Dashboard({userId, onLogout}) {
 
   const [dashboardData, setDashboardData] = useState(null);
@@ -583,7 +565,6 @@ export default function Dashboard({userId, onLogout}) {
           </p>
         </div>
       </header>
-      {/* ── Section 1: Hero ─────────────────────────── */}
       <Hero
         location={`${currentData.location.city}${currentData.location.state ? `, ${currentData.location.state}` : ""}`}
         updatedAt={new Date(currentData.aqi.fetchedAt).toLocaleString()}

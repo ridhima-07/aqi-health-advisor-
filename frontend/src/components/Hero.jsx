@@ -1,17 +1,3 @@
-// ============================================================
-// Hero.jsx — AQI IQ | Hero + Auth + Setup Journey
-//
-// UPDATED FLOW:
-//   Auth section added to homepage (Sign Up / Login toggle)
-//   Sign Up: name, email, password → backend creates user → returns userId
-//   Login: email, password → backend verifies → returns userId → dashboard
-//   Setup Step 1: profile (dob, gender) — updates EXISTING user via userId
-//   Setup Step 2: health profile
-//   Setup Step 3: location setup
-//
-// All styling lives in Hero.css.
-// ============================================================
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -21,59 +7,49 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import "../styles/Hero.css";
-
-// Import updated services — signup/login are NEW; others remain
 import { signup, login } from "../services/authService";
 import { updateUserProfile } from "../services/userService";
 import { createHealthProfile } from "../services/healthService";
 import { createLocation } from "../services/locationService";
 
-// ─────────────────────────────────────────────────────────────
-// PLACEHOLDER DATA  →  replace with backend API response later
-// ─────────────────────────────────────────────────────────────
 const AQI_CARD_DATA = {
-  location:       "Mumbai, India",
-  aqi:            156,
-  aqiLabel:       "Poor",
-  exposureScore:  72,
-  exposureLabel:  "High Risk",
+  location: "Mumbai, India",
+  aqi: 156,
+  aqiLabel: "Poor",
+  exposureScore: 72,
+  exposureLabel: "High Risk",
   recommendation: "Avoid outdoor activity. Wear an N95 mask if going out.",
 };
 
-// Setup steps (auth is handled separately before this flow)
 const STEPS = [
   {
-    id:    1,
+    id: 1,
     icon: "1",
     title: "Complete Profile",
-    hint:  "Add your date of birth and gender",
+    hint: "Add your date of birth and gender",
   },
   {
-    id:    2,
+    id: 2,
     icon: "2",
     title: "Health Details",
-    hint:  "Your conditions affect your risk score",
+    hint: "Your conditions affect your risk score",
   },
   {
-    id:    3,
+    id: 3,
     icon: "3",
     title: "Location Setup",
-    hint:  "We fetch live AQI for your area",
+    hint: "We fetch live AQI for your area",
   },
 ];
 
 const HEALTH_CONDITIONS = [
-  { key: "isSmoker",          label: "Smoker" },
+  { key: "isSmoker", label: "Smoker" },
   { key: "hasHeartCondition", label: "Heart Condition" },
-  { key: "hasAsthma",         label: "Asthma" },
-  { key: "hasCOPD",           label: "COPD" },
-  { key: "hasAllergy",        label: "Allergies" },
+  { key: "hasAsthma", label: "Asthma" },
+  { key: "hasCOPD", label: "COPD" },
+  { key: "hasAllergy", label: "Allergies" },
 ];
 
-
-// ─────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────
 function getAQIColor(aqi) {
   if (aqi <= 50)  return "#22c55e";
   if (aqi <= 100) return "#eab308";
@@ -88,7 +64,6 @@ function getExposureColor(score) {
   return "#ef4444";
 }
 
-// Shared MUI TextField style overrides
 const inputSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
@@ -102,10 +77,6 @@ const inputSx = {
   "& .MuiInputLabel-root.Mui-focused": { color: "#ef4444" },
 };
 
-
-// ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: AQI Preview Card
-// ─────────────────────────────────────────────────────────────
 function AQICard({ data }) {
   const aqiColor = getAQIColor(data.aqi);
   const expColor = getExposureColor(data.exposureScore);
@@ -167,10 +138,10 @@ function AQICard({ data }) {
 
       <Box className="aqi-scale-row">
         {[
-          { label: "Good",   color: "#22c55e" },
-          { label: "Fair",   color: "#eab308" },
-          { label: "Mod",    color: "#f97316" },
-          { label: "Poor",   color: "#ef4444" },
+          { label: "Good", color: "#22c55e" },
+          { label: "Fair", color: "#eab308" },
+          { label: "Mod", color: "#f97316" },
+          { label: "Poor", color: "#ef4444" },
         ].map((lvl) => (
           <Box key={lvl.label} className="scale-item">
             <Box
@@ -194,10 +165,6 @@ function AQICard({ data }) {
   );
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: Scroll Indicator
-// ─────────────────────────────────────────────────────────────
 function ScrollIndicator() {
   return (
     <Box className="scroll-indicator">
@@ -207,16 +174,8 @@ function ScrollIndicator() {
   );
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: Auth Section (NEW)
-// Renders a Sign Up / Login toggle and corresponding form.
-// Props:
-//   onSignupSuccess(userId) — called after successful signup
-//   onLoginSuccess(userId)  — called after successful login
-// ─────────────────────────────────────────────────────────────
 function AuthSection({ onSignupSuccess, onLoginSuccess }) {
-  // "signup" | "login"
+
   const [authMode, setAuthMode] = useState("signup");
 
   const [authData, setAuthData] = useState({
@@ -226,13 +185,12 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState("");
+  const [error, setError] = useState("");
 
   function handleChange(field, value) {
     setAuthData((prev) => ({ ...prev, [field]: value }));
   }
 
-  // Switch between signup and login — clear errors on switch
   function switchMode(mode) {
     setAuthMode(mode);
     setError("");
@@ -242,29 +200,46 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
     setError("");
     setLoading(true);
 
+    if (authMode === "signup") {
+      if (
+        !authData.name.trim() ||
+        !authData.email.trim() ||
+        !authData.password.trim()
+      ) {
+        throw new Error("Please fill in all fields.");
+      }
+    }
+
+    if (authMode === "login") {
+      if (
+        !authData.email.trim() ||
+        !authData.password.trim()
+      ) {
+        throw new Error("Please enter email and password.");
+      }
+    }
+
     try {
       if (authMode === "signup") {
-        // POST /auth/signup — name, email, password
+        
         const res = await signup({
-          name:     authData.name,
-          email:    authData.email,
+          name: authData.name,
+          email: authData.email,
           password: authData.password,
         });
 
-        // Backend returns user id after creating account
         const userId = res?.id || res?.user_id || res?.data?.id;
         if (!userId) throw new Error("Signup succeeded but no user ID was returned.");
 
         onSignupSuccess(userId);
 
       } else {
-        // POST /auth/login — email, password
+        
         const res = await login({
           email:    authData.email,
           password: authData.password,
         });
 
-        // Backend returns user id after verification
         const userId = res?.id || res?.user_id || res?.data?.id;
         if (!userId) throw new Error("Login succeeded but no user ID was returned.");
 
@@ -292,7 +267,7 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
       </Box>
 
       <Box className="auth-panel">
-        {/* ── Mode toggle (Sign Up / Login) ── */}
+        
         <Box className="auth-toggle">
           <button
             className={`auth-toggle-btn ${authMode === "signup" ? "auth-toggle-btn--active" : ""}`}
@@ -308,9 +283,8 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
           </button>
         </Box>
 
-        {/* ── Fields ── */}
         <Box className="form-fields">
-          {/* Name only shown on signup */}
+          
           {authMode === "signup" && (
             <TextField
               label="Full Name"
@@ -342,12 +316,10 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
           />
         </Box>
 
-        {/* ── Error message ── */}
         {error && (
           <Typography className="auth-error">{error}</Typography>
         )}
 
-        {/* ── Submit ── */}
         <Button
           className="btn-primary auth-submit-btn"
           onClick={handleSubmit}
@@ -358,7 +330,6 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
             : (authMode === "signup" ? "Create Account →" : "Log In →")}
         </Button>
 
-        {/* ── Switch prompt ── */}
         <Typography className="auth-switch-text">
           {authMode === "signup"
             ? "Already have an account?"
@@ -375,10 +346,6 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
   );
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: Step Tracker (left panel of Setup Journey)
-// ─────────────────────────────────────────────────────────────
 function StepTracker({ activeStep, completedSteps, onStepClick }) {
   return (
     <Box className="step-tracker">
@@ -424,12 +391,6 @@ function StepTracker({ activeStep, completedSteps, onStepClick }) {
   );
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// SUB-COMPONENT: Form Panel (right panel of Setup Journey)
-// UPDATED: Step 0 is now profile completion (dob + gender only).
-//          User already exists — we update, not create.
-// ─────────────────────────────────────────────────────────────
 function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading, error }) {
 
   function handleChange(field, value) {
@@ -443,9 +404,6 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
   return (
     <Box className="form-panel">
 
-      {/* ── Step 1: Complete Profile (dob + gender only) ── */}
-      {/* NOTE: User account already created via signup.    */}
-      {/* This step UPDATES the existing user profile.      */}
       {activeStep === 0 && (
         <Box className="form-step">
           <Typography className="form-step-title">Complete your profile</Typography>
@@ -474,7 +432,6 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
         </Box>
       )}
 
-      {/* ── Step 2: Health Details ── */}
       {activeStep === 1 && (
         <Box className="form-step">
           <Typography className="form-step-title">Your health profile</Typography>
@@ -503,7 +460,6 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
         </Box>
       )}
 
-      {/* ── Step 3: Location Setup ── */}
       {activeStep === 2 && (
         <Box className="form-step">
           <Typography className="form-step-title">Set your location</Typography>
@@ -545,7 +501,6 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
         </Box>
       )}
 
-      {/* ── Navigation buttons ── */}
       {activeStep < 3 && (
         <>
           {error && (
@@ -576,82 +531,68 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
   );
 }
 
-
-// ─────────────────────────────────────────────────────────────
-// MAIN EXPORT: Hero
-//
-// NEW app states:
-//   "home"    — landing page (not authenticated)
-//   "setup"   — post-signup onboarding flow
-//   (login success → parent handles dashboard navigation)
-// ─────────────────────────────────────────────────────────────
 export default function Hero({ onComplete, onLoginSuccess }) {
 
-  // Controls which major section is shown
-  // "home" = landing + auth  |  "setup" = onboarding flow
   const [appState, setAppState] = useState("home");
 
-  // userId stored after successful signup or login
   const [userId, setUserId] = useState(null);
 
   const navigate = useNavigate();
 
-  // ── Setup flow state ──
-  const [activeStep,     setActiveStep]     = useState(0);
+  const [activeStep, setActiveStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
-  const [loading,        setLoading]        = useState(false);
-  const [error,          setError]          = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Setup form data — name/email/password handled in AuthSection
   const [formData, setFormData] = useState({
-    dob:    "",
+    dob: "",
     gender: "",
 
-    isSmoker:          false,
+    isSmoker: false,
     hasHeartCondition: false,
-    hasAsthma:         false,
-    hasCOPD:           false,
-    hasAllergy:        false,
+    hasAsthma: false,
+    hasCOPD: false,
+    hasAllergy: false,
 
-    city:  "",
+    city: "",
     state: "",
-    lat:   "",
-    lon:   "",
+    lat: "",
+    lon: "",
   });
 
-  // ── Called after successful signup ──
   function handleSignupSuccess(newUserId) {
     setUserId(newUserId);
-    setAppState("setup");          // move to onboarding
-    // Scroll to top of setup section
+    setAppState("setup");         
+
     setTimeout(() => {
       const el = document.querySelector(".setup-section");
       if (el) el.scrollIntoView({ behavior: "smooth" });
     }, 100);
   }
 
-  // ── Called after successful login ──
   function handleLoginSuccess(loggedInUserId) {
     setUserId(loggedInUserId);
-    // Delegate navigation to parent (App.jsx)
+
     if (onLoginSuccess) onLoginSuccess(loggedInUserId);
     navigate("/dashboard");
   }
 
-  // ── Setup step: Next ──
   async function handleNext() {
     setError("");
     setLoading(true);
 
     try {
       if (activeStep === 0) {
-        // Update existing user profile — dob + gender only
-        // User was already created during signup
+        
         if (!userId) throw new Error("User ID missing. Please sign up again.");
 
+        if (!formData.dob || !formData.gender.trim()) {
+          throw new Error("Please complete all profile fields.");
+        }
+
         await updateUserProfile(userId, {
-          dob:     formData.dob,
-          gender:  formData.gender,
+          dob: formData.dob,
+          gender: formData.gender,
         });
       }
 
@@ -659,28 +600,36 @@ export default function Hero({ onComplete, onLoginSuccess }) {
         if (!userId) throw new Error("User ID missing.");
 
         await createHealthProfile({
-          user_id:          userId,
-          isSmoker:         formData.isSmoker,
-          hasHeartCondition:formData.hasHeartCondition,
-          hasAsthma:        formData.hasAsthma,
-          hasCOPD:          formData.hasCOPD,
-          hasAllergy:       formData.hasAllergy,
+          user_id: userId,
+          isSmoker: formData.isSmoker,
+          hasHeartCondition: formData.hasHeartCondition,
+          hasAsthma: formData.hasAsthma,
+          hasCOPD: formData.hasCOPD,
+          hasAllergy: formData.hasAllergy,
         });
       }
 
       if (activeStep === 2) {
         if (!userId) throw new Error("User ID missing.");
 
+        if (
+          !formData.city.trim() ||
+          !formData.state.trim() ||
+          !formData.lat.trim() ||
+          !formData.lon.trim()
+        ) {
+          throw new Error("Please complete all location fields.");
+        }
+
         await createLocation({
           user_id: userId,
-          city:    formData.city,
-          state:   formData.state,
-          lat:     formData.lat,
-          lon:     formData.lon,
+          city: formData.city,
+          state: formData.state,
+          lat: parseFloat(formData.lat),
+          lon: parseFloat(formData.lon),
         });
       }
 
-      // Mark current step complete
       if (!completedSteps.includes(activeStep)) {
         setCompletedSteps((prev) => [...prev, activeStep]);
       }
@@ -715,16 +664,13 @@ export default function Hero({ onComplete, onLoginSuccess }) {
   return (
     <Box className="page-root">
 
-      {/* ════════════════════════════════════════════════════
-          SECTION 1 — HERO (always visible when not in setup)
-      ════════════════════════════════════════════════════ */}
       {appState === "home" && (
         <>
           <Box component="section" className="hero-section" id="aqi-info">
             <Box className="hero-bg-glow" />
 
             <Box className="hero-inner">
-              {/* ── LEFT: Headline + CTAs ── */}
+              
               <Box className="hero-left">
                 <Box className="hero-eyebrow">
                   <Box className="eyebrow-dot" />
@@ -765,7 +711,6 @@ export default function Hero({ onComplete, onLoginSuccess }) {
                 </Box>
               </Box>
 
-              {/* ── RIGHT: AQI Preview Card ── */}
               <Box className="hero-right">
                 <AQICard data={AQI_CARD_DATA} />
               </Box>
@@ -774,11 +719,6 @@ export default function Hero({ onComplete, onLoginSuccess }) {
             <ScrollIndicator />
           </Box>
 
-          {/* ════════════════════════════════════════════════════
-              SECTION 2 — AUTH (Sign Up / Login)
-              NEW: replaces old "Setup Journey" as the first entry point.
-              User is NOT authenticated yet at this point.
-          ════════════════════════════════════════════════════ */}
           <AuthSection
             onSignupSuccess={handleSignupSuccess}
             onLoginSuccess={handleLoginSuccess}
@@ -786,11 +726,6 @@ export default function Hero({ onComplete, onLoginSuccess }) {
         </>
       )}
 
-      {/* ════════════════════════════════════════════════════
-          SECTION 3 — SETUP JOURNEY (post-signup onboarding)
-          Only shown after successful signup.
-          User account already exists — we update, not create.
-      ════════════════════════════════════════════════════ */}
       {appState === "setup" && (
         <Box component="section" className="setup-section" id="setup">
           <Box className="setup-section-header">

@@ -1,25 +1,7 @@
-// ============================================================
-// AqiInfo.jsx — AQI IQ | AQI Information Page
-//
-// Sections:
-//   1. Hero
-//   2. What is AQI
-//   3. AQI Levels
-//   4. Main Pollutants
-//   5. Who Should Be Careful
-//   6. Real-World Impact (Did You Know)
-//   7. How AQI IQ Helps
-//   8. Check AQI Anywhere 
-// ============================================================
-
 import "../styles/AqiInfo.css";
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { getAqiByCity } from "../services/aqi";
-
-// ─────────────────────────────────────────────────────────────
-// DATA
-// ─────────────────────────────────────────────────────────────
 
 const AQI_LEVELS = [
   {
@@ -134,10 +116,6 @@ const DID_YOU_KNOW = [
   },
 ];
 
-// ─────────────────────────────────────────────────────────────
-// COMPONENTS
-// ─────────────────────────────────────────────────────────────
-
 function SectionLabel({ children }) {
   return <p className="ai-section-label">{children}</p>;
 }
@@ -180,10 +158,6 @@ function getAqiClass(label) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// MAIN PAGE
-// ─────────────────────────────────────────────────────────────
-
 export default function AqiInfo({ userId, onLogout }) {
     const [city, setCity] = useState("");
     const [aqiData, setAqiData] = useState(null);
@@ -210,9 +184,6 @@ export default function AqiInfo({ userId, onLogout }) {
   return (
     <div className="ai-root">
         <Navbar userId={userId} onLogout={onLogout} />
-        {/* ══════════════════════════════════════════════════
-          1. CHECK AQI ANYWHERE 
-      ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-section--alt ai-cta-section">
         <div className="ai-container">
             <div className="ai-cta-inner">
@@ -285,9 +256,6 @@ export default function AqiInfo({ userId, onLogout }) {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════
-          2. HERO
-      ══════════════════════════════════════════════════ */}
       <section className="ai-hero">
         <div className="ai-hero-inner">
           <div className="ai-hero-tag">
@@ -301,14 +269,9 @@ export default function AqiInfo({ userId, onLogout }) {
             about when and how to protect your health.
           </p>
         </div>
-        {/* Subtle decorative rule */}
         <div className="ai-hero-rule" />
       </section>
 
-
-      {/* ══════════════════════════════════════════════════
-          3. WHAT IS AQI
-      ══════════════════════════════════════════════════ */}
       <section className="ai-section">
         <div className="ai-container">
           <SectionLabel>Basics</SectionLabel>
@@ -348,10 +311,6 @@ export default function AqiInfo({ userId, onLogout }) {
         </div>
       </section>
 
-
-      {/* ══════════════════════════════════════════════════
-          4. AQI LEVELS
-      ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-section--alt">
         <div className="ai-container">
           <SectionLabel>Scale</SectionLabel>
@@ -383,10 +342,6 @@ export default function AqiInfo({ userId, onLogout }) {
         </div>
       </section>
 
-
-      {/* ══════════════════════════════════════════════════
-          5. MAIN POLLUTANTS
-      ══════════════════════════════════════════════════ */}
       <section className="ai-section">
         <div className="ai-container">
           <SectionLabel>Pollutants</SectionLabel>
@@ -412,10 +367,6 @@ export default function AqiInfo({ userId, onLogout }) {
         </div>
       </section>
 
-
-      {/* ══════════════════════════════════════════════════
-          6. WHO SHOULD BE CAREFUL
-      ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-section--alt">
         <div className="ai-container">
           <SectionLabel>Sensitive Groups</SectionLabel>
@@ -439,10 +390,6 @@ export default function AqiInfo({ userId, onLogout }) {
         </div>
       </section>
 
-
-      {/* ══════════════════════════════════════════════════
-          7. REAL-WORLD IMPACT — DID YOU KNOW
-      ══════════════════════════════════════════════════ */}
       <section className="ai-section ai-dyk-section">
         <div className="ai-container">
           <div className="ai-dyk-header">
@@ -470,10 +417,6 @@ export default function AqiInfo({ userId, onLogout }) {
         </div>
       </section>
 
-
-      {/* ══════════════════════════════════════════════════
-          8. HOW AQI IQ HELPS
-      ══════════════════════════════════════════════════ */}
       <section className="ai-section">
         <div className="ai-container">
           <SectionLabel>Our Approach</SectionLabel>

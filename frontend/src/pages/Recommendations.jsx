@@ -1,27 +1,7 @@
-// ============================================================
-// Recommendations.jsx — AQI IQ | Action Plan
-//
-// Props (from App.jsx routing):
-//   userId  — string | number
-//
-// Fetches from: GET /dashboard/:userId   (same as Dashboard)
-// Backend response shape (result.data):
-//   aqi.aqiValue            — number
-//   aqiLabel                — string  ("Good" | "Fair" | "Moderate" | "Poor")
-//   riskLevel               — string
-//   nextBestAction.message  — string
-//   healthAdvisory.doNext   — string[]
-//   location.city / .state  — string
-//   recommendations         — { category, priority, message }[]
-//     (new field — falls back to derived items if absent from backend)
-// ============================================================
-
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { getDashboardData } from "../services/dashboardService";
 import "../styles/Recommendations.css";
-
-// ─── Helpers ────────────────────────────────────────────────
 
 function severityClass(v) {
   if (v <= 50)  return "sev-good";
@@ -37,7 +17,6 @@ function aqiColor(v) {
   return "#f87171";
 }
 
-// Priority sort order — High first
 const PRIORITY_ORDER = { High: 0, Medium: 1, Low: 2 };
 
 function sortByPriority(items) {
@@ -74,7 +53,6 @@ function deriveRecommendations(healthAdvisory, aqiValue) {
   }));
 }
 
-// Insight paragraph 
 function buildInsight(aqiValue, city) {
   const place = city || "your area";
   if (aqiValue <= 50)
@@ -85,8 +63,6 @@ function buildInsight(aqiValue, city) {
     return `Air quality in ${place} is elevated. Breathing discomfort is possible during extended outdoor exertion, particularly if you have a pre-existing health condition.`;
   return `Air quality in ${place} is poor right now. Outdoor exposure should be minimised for everyone — not just sensitive groups. Follow the guidance below carefully.`;
 }
-
-// ─── Config ──────────────────────────────────────────────────
 
 const PRIORITY_CONFIG = {
   High:   { color: "#f87171", bg: "rgba(248,113,113,0.12)" },
@@ -108,8 +84,6 @@ function getCategoryStyle(category) {
   return CATEGORY_CONFIG[category] ?? { color: "#9BA4B5", bg: "rgba(155,164,181,0.10)" };
 }
 
-// ─── Sub-components ──────────────────────────────────────────
-
 function Badge({ label, color, bg }) {
   return (
     <span className="rec-badge" style={{ color, background: bg }}>
@@ -118,7 +92,6 @@ function Badge({ label, color, bg }) {
   );
 }
 
-// A single card in the vertical feed
 function RecCard({ item, index }) {
   const displayPriority = normalizePriority(item.priority);
   const pri = getPriorityStyle(displayPriority);
@@ -146,7 +119,6 @@ function RecCard({ item, index }) {
   );
 }
 
-// Compact priority breakdown 
 function PriorityBreakdown({ items }) {
   const counts = items.reduce((acc, r) => {
     const key = normalizePriority(r.priority);
@@ -177,8 +149,6 @@ function PriorityBreakdown({ items }) {
   );
 }
 
-// ─── Main export ─────────────────────────────────────────────
-
 export default function Recommendations({ userId, onLogout }) {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
@@ -201,7 +171,6 @@ export default function Recommendations({ userId, onLogout }) {
     load();
   }, [userId]);
 
-  // ── Loading state ────────────────────────────────────────
   if (loading) {
     return (
       <main className="rec-page">
@@ -216,7 +185,6 @@ export default function Recommendations({ userId, onLogout }) {
     );
   }
 
-  // ── Error state ──────────────────────────────────────────
   if (error || !data) {
     return (
       <main className="rec-page">
@@ -233,7 +201,6 @@ export default function Recommendations({ userId, onLogout }) {
     );
   }
 
-  // ── Derived display values ───────────────────────────────
   const aqiValue    = data.aqi?.aqiValue ?? 0;
   const aqiLabel    = data.aqiLabel      ?? "—";
   const riskLevel   = data.riskLevel     ?? "—";
@@ -263,15 +230,11 @@ export default function Recommendations({ userId, onLogout }) {
           <h1 className="rec-page-title">RECOMMENDATIONS</h1>
         </header>
 
-        {/* ══════════════════════════════════════════════
-            1. AQI SUMMARY CARD
-        ══════════════════════════════════════════════ */}
         <section
           className="rec-summary"
           style={{ "--sev-color": color }}
           aria-label="Current AQI summary"
         >
-          {/* AQI number + label */}
           <div className="rec-summary-left">
             <span className="rec-summary-number">{aqiValue}</span>
             <div className="rec-summary-meta">
@@ -282,25 +245,16 @@ export default function Recommendations({ userId, onLogout }) {
 
           <div className="rec-summary-divider" />
 
-          {/* Risk + action */}
           <div className="rec-summary-right">
             <p className="rec-summary-risk-eyebrow">Risk Level</p>
             <p className="rec-summary-risk-value">{riskLevel}</p>
             <p className="rec-summary-action">{mainAction}</p>
           </div>
         </section>
-
-        {/* ══════════════════════════════════════════════
-            2. PERSONALISED INSIGHT
-        ══════════════════════════════════════════════ */}
         <section className="rec-insight" aria-label="Today's context">
           <p className="rec-insight-eyebrow">Today's Context</p>
           <p className="rec-insight-text">{insight}</p>
         </section>
-
-        {/* ══════════════════════════════════════════════
-            3. RECOMMENDATION FEED
-        ══════════════════════════════════════════════ */}
         <section className="rec-feed" aria-label="Recommendations">
           <div className="rec-feed-header">
             <div className="rec-feed-header-left">

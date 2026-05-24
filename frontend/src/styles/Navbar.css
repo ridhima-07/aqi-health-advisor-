@@ -34,18 +34,23 @@
 }
 
 /* ── Logo ─────────────────────────────────────────────────────── */
-.navbar-logo.MuiTypography-root {
-  font-family: "Inter", sans-serif !important;
-  font-size: 1.2rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
-  color: var(--text, #EEEEEE) !important;
+
+.navbar-logo {
+  font-size: 1.30rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   cursor: pointer;
-  user-select: none;
-  transition: opacity 0.2s ease;
+  transition: all 0.25s ease;
 }
-.navbar-logo.MuiTypography-root:hover {
-  opacity: 0.9;
+
+.navbar-logo:hover {
+  color: #3fd6e4;
+  transform: translateY(-1px);
 }
 
 /* ── Right-side action group ──────────────────────────────────── */

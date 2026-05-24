@@ -1,23 +1,6 @@
-/* ============================================================
-   Hero.css — AQI IQ | Hero + Auth + Setup Journey Styles
-   ============================================================
-   Color tokens (from spec):
-     Background  : #222831
-     Surface     : #393E46
-     Text        : var(--text)
-     Muted text  : var(--muted)
-   AQI colors only used for data indicators:
-     Good        : #22c55e
-     Fair        : #eab308
-     Moderate    : #f97316
-     Poor        : #ef4444
-   ============================================================ */
-
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
-/* ─── Reset ─────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 
 .theme-dark {
   --bg: #222831;
@@ -34,8 +17,6 @@
   --input-border: #444c5c;
 }
 
-
-/* ─── Root ──────────────────────────────────────────────── */
 .page-root {
   background: var(--bg);
   color: var(--text);
@@ -44,10 +25,6 @@
   font-family: "Inter", sans-serif;
 }
 
-
-/* ════════════════════════════════════════════════════════════
-   SHARED BUTTONS
-════════════════════════════════════════════════════════════ */
 .btn-primary {
   font-family: "Inter", sans-serif !important;
   font-size: 14px !important;
@@ -86,10 +63,6 @@
   background: rgba(255,255,255,0.04) !important;
 }
 
-
-/* ════════════════════════════════════════════════════════════
-   HERO SECTION
-════════════════════════════════════════════════════════════ */
 .hero-section {
   background: var(--bg);
   position: relative;
@@ -123,8 +96,6 @@
   z-index: 1;
 }
 
-
-/* ── Hero Left ─────────────────────────────────────────── */
 .hero-left {
   display: flex;
   flex-direction: column;
@@ -206,8 +177,6 @@
   gap: 14px;
 }
 
-
-/* ── Hero Right: AQI Card ──────────────────────────────── */
 .hero-right {
   display: flex;
   justify-content: center;
@@ -216,8 +185,6 @@
   z-index: 1;
 }
 
-
-/* ─── AQI Preview Card ──────────────────────────────────── */
 .aqi-card {
   position: relative;
   width: 100%;
@@ -422,8 +389,6 @@
   font-weight: 500 !important;
 }
 
-
-/* ── Scroll Indicator ──────────────────────────────────── */
 .scroll-indicator {
   display: flex;
   flex-direction: column;
@@ -452,11 +417,6 @@
   50%       { transform: translateY(8px); opacity: 1; }
 }
 
-
-/* ════════════════════════════════════════════════════════════
-   AUTH SECTION (NEW)
-   Sign Up / Login entry point 
-════════════════════════════════════════════════════════════ */
 .auth-section {
   background: var(--section);
   border-top: 1px solid var(--border);
@@ -469,7 +429,6 @@
   text-align: center;
 }
 
-/* Auth panel card */
 .auth-panel {
   max-width: 460px;
   margin: 0 auto;
@@ -484,7 +443,6 @@
   animation: form-appear 0.3s ease;
 }
 
-/* ── Sign Up / Log In toggle ── */
 .auth-toggle {
   display: flex;
   background: var(--surface-2);
@@ -519,14 +477,12 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
-/* Error message */
 .auth-error {
   font-size: 13px !important;
   color: #ef4444 !important;
   margin-top: -8px !important;
 }
 
-/* Full-width submit button inside auth panel */
 .auth-submit-btn {
   width: 100% !important;
   justify-content: center !important;
@@ -534,7 +490,6 @@
   font-size: 14.5px !important;
 }
 
-/* Switch prompt */
 .auth-switch-text {
   font-size: 13px !important;
   color: var(--muted) !important;
@@ -554,10 +509,6 @@
   color: var(--text);
 }
 
-
-/* ════════════════════════════════════════════════════════════
-   SETUP JOURNEY SECTION
-════════════════════════════════════════════════════════════ */
 .setup-section {
   background: var(--section);
   border-top: 1px solid var(--border);
@@ -603,8 +554,6 @@
   max-width: 620px;
 }
 
-
-/* ── Step Tracker (left panel) ────────────────────────── */
 .step-tracker {
   display: flex;
   flex-direction: column;
@@ -749,8 +698,6 @@
   line-height: 1;
 }
 
-
-/* ── Form Panel (right panel) ─────────────────────────── */
 .form-panel {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -885,12 +832,6 @@
   background: rgba(239, 68, 68, 0.4);
 }
 
-
-/* ════════════════════════════════════════════════════════════
-   RESPONSIVE
-════════════════════════════════════════════════════════════ */
-
-/* Tablet */
 @media (max-width: 960px) {
   .hero-section {
     padding: 72px 28px 0;
@@ -936,7 +877,6 @@
   }
 }
 
-/* Mobile */
 @media (max-width: 600px) {
   .hero-section {
     padding: 56px 16px 0;
