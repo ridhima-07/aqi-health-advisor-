@@ -1,9 +1,10 @@
 import pool from "../db.js";
 
-export async function addLocation (user_id, city, state, lat, lon )
+export async function addLocation(user_id, city, state, pincode, lat, lon)
 {
-    const [newLocation] = await pool.query(`INSERT into locations (user_id, city, state, lat, lon)
-       VALUES  ( ? , ? , ? , ? , ? )`,[user_id, city, state, lat,lon]);
+    const [newLocation] = await pool.query( `INSERT INTO locations (user_id, city, state, pincode, lat, lon)
+         VALUES (?, ?, ?, ?, ?, ?)`, [user_id, city, state, pincode, lat, lon]
+    );
     return newLocation;
 };
 
@@ -37,11 +38,11 @@ export async function getLatestLocationByUserID(user_id)
     return rows[0];
 };
 
-export async function updateLocationByID ( id, city, state, lat, lon )
+export async function updateLocationByID(id, city, state, pincode, lat, lon)
 {
-    const [updatedLocation] = await pool.query(`UPDATE locations 
-        SET city = ?, state = ?, lat = ?, lon = ?
-        WHERE id = ?`, [city, state, lat, lon, id]);
+    const [updatedLocation] = await pool.query( `UPDATE locations SET city = ?, state = ?, pincode = ?, lat = ?, lon = ? WHERE id = ?`,
+        [city, state, pincode, lat, lon, id]
+    );
     return updatedLocation;
 };
 

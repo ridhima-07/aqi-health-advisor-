@@ -11,12 +11,12 @@ export async function login ( req, res )
 
         const user = await getUserByEmail ( email );
         if (!user) 
-            return res.status(404).json({success: false, message: "User not found."});
+            return res.status(404).json({success: false, message: "Incorrect email or password."});
 
         const isMatch = await bcrypt.compare( password, user.password );
 
         if ( !isMatch )
-            return res.status(401).json({success: false, message: "Invalid credentials!"});
+            return res.status(401).json({success: false, message: "Incorrect email or password."});
 
         return res.status(200).json({success: true, message: "User logged in successfully!", data: {id: user.id}});
 

@@ -12,7 +12,7 @@ export async function signup ( req, res )
         const existingUser = await getUserByEmail(email);
 
         if (existingUser) 
-            return res.status(400).json({ success: false, message: "User already exists with this email."});
+            return res.status(400).json({ success: false, message: "An account with this email already exists."});
 
         const hash = await bcrypt.hash(password, 10);
         const newUser = await createAuthUser ( name, email, hash );
