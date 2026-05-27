@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import "../styles/Navbar.css";
 
-export default function Navbar({ userId, onLogout }) {
+export default function Navbar({ userId, onLogout, setAuthMode }) {
   const navigate = useNavigate();
 
   const storedUserId = localStorage.getItem("userId");
@@ -35,9 +35,45 @@ export default function Navbar({ userId, onLogout }) {
           </>
         ) : (
           <>
-            <NavLink to="/aqi-info" className="nav-link">AQI Info</NavLink>
-            <NavLink to="/login" className="nav-link">Log In</NavLink>
-            <NavLink to="/signup" className="nav-link nav-link--cta">Sign Up</NavLink>
+            <NavLink to="/aqi-info" className="nav-link">
+              AQI Info
+            </NavLink>
+
+            <button
+              className="nav-link nav-btn-reset"
+              onClick={() => {
+                setAuthMode("login");
+
+                const authSection = document.getElementById("auth");
+
+                if (authSection) {
+                  authSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }
+              }}
+            >
+              Log In
+            </button>
+
+            <button
+              className="nav-link nav-link--cta nav-btn-reset"
+              onClick={() => {
+                setAuthMode("signup");
+
+                const authSection = document.getElementById("auth");
+
+                if (authSection) {
+                  authSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }
+              }}
+            >
+              Sign Up
+            </button>
           </>
         )}
       </div>

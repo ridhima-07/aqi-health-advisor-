@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -174,16 +175,19 @@ function ScrollIndicator() {
   );
 }
 
-function AuthSection({ onSignupSuccess, onLoginSuccess }) {
-
-  const [authMode, setAuthMode] = useState("signup");
+function AuthSection({ onSignupSuccess, onLoginSuccess, authMode }) {
 
   const [authData, setAuthData] = useState({
     name: "",
     email: "",
     password: "",
   });
-
+  const [currentMode, setCurrentMode] = useState(authMode || "signup");
+  useEffect(() => {
+    if (authMode) {
+      setCurrentMode(authMode);
+    }
+  }, [authMode]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -192,7 +196,7 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
   }
 
   function switchMode(mode) {
-    setAuthMode(mode);
+    setCurrentMode(mode);
     setError("");
   }
 
@@ -200,7 +204,7 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
     setError("");
     setLoading(true);
 
-    if (authMode === "signup") {
+    if (currentMode === "signup") {
       if (
         !authData.name.trim() ||
         !authData.email.trim() ||
@@ -210,7 +214,7 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
       }
     }
 
-    if (authMode === "login") {
+    if (currentMode === "login") {
       if (
         !authData.email.trim() ||
         !authData.password.trim()
@@ -220,7 +224,7 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
     }
 
     try {
-      if (authMode === "signup") {
+      if (currentMode === "signup") {
         
         const res = await signup({
           name: authData.name,
@@ -246,7 +250,13 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
         onLoginSuccess(userId);
       }
     } catch (err) {
-      setError(err.message || "Something went wrong. Please try again.");
+
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Something went wrong. Please try again.";
+
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -257,10 +267,10 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
       <Box className="auth-section-header">
         <Typography className="setup-eyebrow">Get Started</Typography>
         <Typography className="setup-heading">
-          {authMode === "signup" ? "Create your account" : "Welcome back"}
+          {currentMode === "signup" ? "Create your account" : "Welcome back"}
         </Typography>
         <Typography className="setup-subheading">
-          {authMode === "signup"
+          {currentMode === "signup"
             ? "Sign up to get your personalized AQI exposure profile."
             : "Log in to view your personalized dashboard."}
         </Typography>
@@ -270,13 +280,13 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
         
         <Box className="auth-toggle">
           <button
-            className={`auth-toggle-btn ${authMode === "signup" ? "auth-toggle-btn--active" : ""}`}
+            className={`auth-toggle-btn ${currentMode === "signup" ? "auth-toggle-btn--active" : ""}`}
             onClick={() => switchMode("signup")}
           >
             Sign Up
           </button>
           <button
-            className={`auth-toggle-btn ${authMode === "login" ? "auth-toggle-btn--active" : ""}`}
+            className={`auth-toggle-btn ${currentMode === "login" ? "auth-toggle-btn--active" : ""}`}
             onClick={() => switchMode("login")}
           >
             Log In
@@ -285,7 +295,7 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
 
         <Box className="form-fields">
           
-          {authMode === "signup" && (
+          {currentMode === "signup" && (
             <TextField
               label="Full Name"
               variant="outlined"
@@ -326,19 +336,19 @@ function AuthSection({ onSignupSuccess, onLoginSuccess }) {
           disabled={loading}
         >
           {loading
-            ? (authMode === "signup" ? "Creating account..." : "Logging in...")
-            : (authMode === "signup" ? "Create Account →" : "Log In →")}
+            ? (currentMode === "signup" ? "Creating account..." : "Logging in...")
+            : (currentMode === "signup" ? "Create Account →" : "Log In →")}
         </Button>
 
         <Typography className="auth-switch-text">
-          {authMode === "signup"
+          {currentMode === "signup"
             ? "Already have an account?"
             : "Don't have an account?"}{" "}
           <span
             className="auth-switch-link"
-            onClick={() => switchMode(authMode === "signup" ? "login" : "signup")}
+            onClick={() => switchMode(currentMode === "signup" ? "login" : "signup")}
           >
-            {authMode === "signup" ? "Log in" : "Sign up"}
+            {currentMode === "signup" ? "Log in" : "Sign up"}
           </span>
         </Typography>
       </Box>
@@ -421,13 +431,16 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
               sx={inputSx}
             />
             <TextField
+              select
               label="Gender"
-              variant="outlined"
               fullWidth
               value={formData.gender}
               onChange={(e) => handleChange("gender", e.target.value)}
               sx={inputSx}
-            />
+            >
+              <MenuItem value="Male">Male</MenuItem>
+              <MenuItem value="Female">Female</MenuItem>
+            </TextField>
           </Box>
         </Box>
       )}
@@ -481,22 +494,13 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
               onChange={(e) => handleChange("state", e.target.value)}
               sx={inputSx}
             />
-            <Box className="latlong-row">
-              <TextField
-                label="Latitude"
-                fullWidth
-                value={formData.lat}
-                onChange={(e) => handleChange("lat", e.target.value)}
-                sx={inputSx}
-              />
-              <TextField
-                label="Longitude"
-                fullWidth
-                value={formData.lon}
-                onChange={(e) => handleChange("lon", e.target.value)}
-                sx={inputSx}
-              />
-            </Box>
+            <TextField
+              label="Pincode"
+              fullWidth
+              value={formData.pincode}
+              onChange={(e) => handleChange("pincode", e.target.value)}
+              sx={inputSx}
+            />
           </Box>
         </Box>
       )}
@@ -531,7 +535,7 @@ function FormPanel({ activeStep, formData, setFormData, onNext, onBack, loading,
   );
 }
 
-export default function Hero({ onComplete, onLoginSuccess }) {
+export default function Hero({ onComplete, onLoginSuccess, authMode }) {
 
   const [appState, setAppState] = useState("home");
 
@@ -556,8 +560,7 @@ export default function Hero({ onComplete, onLoginSuccess }) {
 
     city: "",
     state: "",
-    lat: "",
-    lon: "",
+    pincode: "",
   });
 
   function handleSignupSuccess(newUserId) {
@@ -615,8 +618,7 @@ export default function Hero({ onComplete, onLoginSuccess }) {
         if (
           !formData.city.trim() ||
           !formData.state.trim() ||
-          !formData.lat.trim() ||
-          !formData.lon.trim()
+          !formData.pincode.trim()
         ) {
           throw new Error("Please complete all location fields.");
         }
@@ -625,8 +627,7 @@ export default function Hero({ onComplete, onLoginSuccess }) {
           user_id: userId,
           city: formData.city,
           state: formData.state,
-          lat: parseFloat(formData.lat),
-          lon: parseFloat(formData.lon),
+          pincode: formData.pincode,
         });
       }
 
@@ -635,14 +636,25 @@ export default function Hero({ onComplete, onLoginSuccess }) {
       }
 
       if (activeStep === 2) {
-        if (onComplete) onComplete(userId);
-        navigate("/dashboard")
+          if (onLoginSuccess) {
+              onLoginSuccess(userId);
+          }
+          if (onComplete) {
+              onComplete(userId);
+          }
+          navigate("/dashboard");
       } else {
         setActiveStep((prev) => Math.min(prev + 1, STEPS.length - 1));
       }
 
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Something went wrong. Please try again.";
+
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -722,6 +734,7 @@ export default function Hero({ onComplete, onLoginSuccess }) {
           <AuthSection
             onSignupSuccess={handleSignupSuccess}
             onLoginSuccess={handleLoginSuccess}
+            authMode={authMode}
           />
         </>
       )}
