@@ -32,6 +32,10 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/recommendations", recommendationRoutes);
 app.use("/auth", authRoutes);
 
+app.get("/", (req, res) => {
+  res.send("AQI Health Advisor Backend Running Successfully");
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
