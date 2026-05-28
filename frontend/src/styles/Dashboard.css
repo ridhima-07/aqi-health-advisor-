@@ -9,6 +9,11 @@
 .sev-moderate { --sev: #fb923c; --sev-dim: rgba(251,146,60,0.10);  --sev-label: #9a3412; }
 .sev-poor     { --sev: #f87171; --sev-dim: rgba(248,113,113,0.10); --sev-label: #991b1b; }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 .dashboard-page-header {
   display: flex;
   align-items: center;
@@ -736,6 +741,19 @@ body {
     gap: 14px;
   }
 
+  .hero-aqi {
+    width: 100%;
+  }
+
+  .aqi-number {
+    word-break: break-word;
+  }
+
+  .hero-aqi-block {
+    width: 100%;
+    min-width: 0;
+  }
+
   /* HERO SECTION */
 
   .hero {
@@ -763,7 +781,7 @@ body {
 
   .hero-right-col {
     width: 100%;
-    min-width: unset;
+    min-width: 0;
     border-left: none;
     border-top: 1px solid rgba(255,255,255,0.06);
     padding-left: 0;
