@@ -38,7 +38,15 @@ function App() {
           }
         />
 
-        <Route path="/aqi-info" element={<AqiInfo />} />
+        <Route
+          path="/aqi-info"
+          element={
+            <AqiInfo
+              userId={userId}
+              onLogout={handleLogout}
+            />
+          }
+        />
 
         <Route
           path="/recommendations"

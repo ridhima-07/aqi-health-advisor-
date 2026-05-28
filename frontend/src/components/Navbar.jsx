@@ -42,16 +42,11 @@ export default function Navbar({ userId, onLogout, setAuthMode }) {
             <button
               className="nav-link nav-btn-reset"
               onClick={() => {
-                setAuthMode("login");
+                setAuthMode?.("login");
 
-                const authSection = document.getElementById("auth");
-
-                if (authSection) {
-                  authSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }
+                navigate("/", {
+                  state: { scrollToAuth: true, mode: "login" },
+                });
               }}
             >
               Log In
@@ -60,16 +55,11 @@ export default function Navbar({ userId, onLogout, setAuthMode }) {
             <button
               className="nav-link nav-link--cta nav-btn-reset"
               onClick={() => {
-                setAuthMode("signup");
+                setAuthMode?.("signup");
 
-                const authSection = document.getElementById("auth");
-
-                if (authSection) {
-                  authSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }
+                navigate("/", {
+                  state: { scrollToAuth: true, mode: "signup" },
+                });
               }}
             >
               Sign Up
